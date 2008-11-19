@@ -1,0 +1,55 @@
+Here's the rough description of what is going on at runtime.
+
+All Vertebra-active code is in an actor, whether it's the target of an
+operation or the initiator of an operation.  This is largely intended
+to help manage the initiators of operations and make recursion in
+Vertebra manageable in a coherent and sane way.
+
+When the runtime is started, the agent class spins up.  Depending on
+its configuration and invocation options, it will synthesize a number
+of operations.
+
+Actors are loaded on-demand.  They are discovered via a mechanism
+similar to Python's own '.pth' files (essentially sys.path is searched
+for *.actor, which gives a list of modules to import).
+
+How the operations execute depends largely on which actor
+implementation is used.  Each actor is its own Process with a
+full-duplex pipe to the agent process.  Operations are dispatched by
+sending a message with the source agent, destination agent, token, and
+invocation options.  Results are sent back to the agent.
+Administrative messages may also be sent telling the actor to pause or
+kill an operation (or itself).
+
+The agent keeps track of all operations, actors, and XMPP connections.
+There may be multiple XMPP connections (and thus Vertebra logins) per
+agent.  Each will have its own XMPP resource.  The agent handles all
+fault-tolerance, so actors only have to worry about sending results
+and handling management messages.
+
+The actor implementations provided are:
+
+AsyncActor.  Each operation is a generator.  Facilities are provided
+to yield to other processes, send a result, indicate completion, or
+initiate other Vertebra operations.  The actor is essentially
+single-threaded, so care must be taken not to block.
+
+SyncActor.  Each operation is a method on the actor class.  They are
+spawned with threads in the actor process.  Threading primitives are
+used such that all access appears to be synchronous.  Care must be
+taken that any state data is handled in a thread-safe way.
+
+StaticActor.  Each operation returns static data.
+
+There is a CLI wrapper provided that loads an agent and spawns a
+special method that handles a CLI invocation.
+
+The agent wrapper loads an agent and discovers its configuration in
+~/.vertebra/pyagent.ini or in /etc/vertebra/pyagent.ini.  XMPP login
+credentials are located in auth.ini in the same directory.
+
+The agent normally daemonizes.  If it is started in UI mode, then it
+will immediately locate and load the UI wrapper, which provides a set
+of curses windows that show the current activity, advertised
+resources, and log traffic.
+

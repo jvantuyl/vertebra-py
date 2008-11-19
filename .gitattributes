@@ -1,0 +1,4 @@
+*.pdf -crlf -diff -merge
+*.png -crlf -diff -merge
+*.graffle -crlf -diff -merge
+*.tmproj -crlf -diff -merge
