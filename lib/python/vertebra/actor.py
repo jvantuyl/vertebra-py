@@ -12,17 +12,21 @@
 
 from multiprocessing import Process, Pipe
 
-def op(op_prefix="/debug",**op_resources):
+def op(func,op_prefix="/debug",op_name=None,op_memo=False,**op_resources):
     """Decorator To Add Metadata Necessary For A Vertebra Operation
     """
-
-    def set_op(func,prefix=op_prefix,res=op_resources):
-        func.vop = True
-        func.vop_prefix = prefix
-        func.vop_res = res
-        return func
-
-    return set_op
+    if not op_name:
+      name = func.func_name
+    op_name = op_prefix + '/' + op_name
+    while '//' in op_name:
+      op_name = op_name.replace('//','/')
+    func.vop = True
+    func.vop_name = op_name
+    func.vop_memo = op_memo
+    func.vop_memoed = False
+    func.vop_memoval = None
+    func.vop_res = op_resources
+    return func
 
 class base_actor(Process):
     """Vertebra Actor Base Class
@@ -33,8 +37,12 @@ class base_actor(Process):
         self.pipe,pipe = Pipe(duplex=True)
         return super(actor,self).__init__(None,None,name,pipe,*args,**kwargs)
 
-    def run(pipe,*args,**kwargs):
+    def run(self,pipe,*args,**kwargs):
         raise NotImplementedError
+    
+    @op("/internal")
+    def main(self,*args,**kwargs):
+      raise NotImplementedError
 
     def ops(self):
         return [ op for op in dir(self) 
@@ -46,11 +54,8 @@ class async_actor(base_actor):
 class sync_actor(base_actor):
     pass
 
-class static_actor(base_actor):
-    pass
-
 def __test__():
-    class TestActor(actor):
+    class TestActor(async_actor):
         @op(a="/test",b="/test2")
         def ping(self):
             print "blah"
