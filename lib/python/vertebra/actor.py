@@ -10,53 +10,56 @@
    passing.
 """
 
-from multiprocessing import Process, Pipe
+import threading
+import multiprocessing
+from vertebra.util import normalize_path
 
-def op(func,op_prefix="/debug",op_name=None,op_memo=False,**op_resources):
-    """Decorator To Add Metadata Necessary For A Vertebra Operation
-    """
-    if not op_name:
-      name = func.func_name
-    op_name = op_prefix + '/' + op_name
-    while '//' in op_name:
-      op_name = op_name.replace('//','/')
-    func.vop = True
-    func.vop_name = op_name
-    func.vop_memo = op_memo
-    func.vop_memoed = False
-    func.vop_memoval = None
-    func.vop_res = op_resources
-    return func
-
-class base_actor(Process):
-    """Vertebra Actor Base Class
-    """
-
-    def __init__(self,*args,**kwargs):
-        name = "actor<%s>" % self.__class__.__name__
-        self.pipe,pipe = Pipe(duplex=True)
-        return super(actor,self).__init__(None,None,name,pipe,*args,**kwargs)
-
-    def run(self,pipe,*args,**kwargs):
-        raise NotImplementedError
+class operation(object):
+  """A class that supports the operation protocol.
+  """
+  def __init__(self,op_name,op_prefix="/debug",op_memo=False,**op_resources):
+    self.prefix = op_prefix
+    self.name = op_name
+    self.memo = op_memo
+    self.memoed = False
+    self.memoval = None
+    self.res = op_resources
+  
+  def __call__(self,code):
+    self.code = code
+    code.op = self
+    return code
     
-    @op("/internal")
-    def main(self,*args,**kwargs):
-      raise NotImplementedError
-
-    def ops(self):
-        return [ op for op in dir(self) 
-                 if getattr(getattr(self,op,None),'vop',False) ]
-
-class async_actor(base_actor):
+  def accept(self,**resources):
+    return True # FIXME: Actually check resources
+  
+  def dispatch(self,**kwargs):
+    raise NotImplementedError
+    
+  def next(self):
+    raise NotImplementedError
+  
+  def cancel(self):
     pass
 
-class sync_actor(base_actor):
-    pass
+class job(object):
+  """A class that supports the job protocol.
+  """
+  def __init__(self,job_name,pjid,**resources):
+    self.name = job_name
+    self.pjid = pjid
+    super(job,self).__init__()
+  
+  def abort(self):
+    raise NotImplementedError
 
-def __test__():
-    class TestActor(async_actor):
-        @op(a="/test",b="/test2")
-        def ping(self):
-            print "blah"
-    return TestActor
+  def pause(self):
+    raise NotImplementedError
+
+  def resume(self):
+    raise NotImplementedError
+
+class job_thread(job):
+  """A class that implements a job process as a thread.
+  """
+  
