@@ -1,0 +1,2 @@
+class job(object):
+  pass
