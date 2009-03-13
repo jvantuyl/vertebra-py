@@ -8,7 +8,7 @@ def __hexify__(val,pad=0):
   else:
     val = val[2:]
   val = '0' * max(0, pad - len(val)) + val
-  return val
+  return val.lower()
 
 TOKEN_LEN_BITS = 128 # bits
 TOKEN_LEN_BYTES = TOKEN_LEN_BITS / 8
