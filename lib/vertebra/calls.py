@@ -1,11 +1,21 @@
-class call(object):
+class incall(object):
   pass
 
-class initcall(call):
+class incall_local(incall):
   pass
 
-class incall(call):
+class incall_net(incall):
   pass
 
-class outcall(call):
+class incall_initcall(incall):
   pass
+
+class outcall(object):
+  pass
+
+class outcall_local(outcall):
+  pass
+
+class outcall_net(outcall):
+  pass
+
