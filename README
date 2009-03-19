@@ -4,3 +4,4 @@ Dependencies
 
 Fibra >= 0.0.10
 PyXMPP >= 1.6.0
+PyYAML
