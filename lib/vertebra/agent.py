@@ -32,7 +32,7 @@ class agent(Thread):
     sched = self.sched
     self.conn.start()
     info("agent starting")
-    #sched.install(self.idle())
+    sched.install(self.idle())
     sched.install(self.recv())
     sched.install(self.xmit())
     info("loading actors")
