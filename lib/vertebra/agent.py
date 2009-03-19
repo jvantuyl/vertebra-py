@@ -36,9 +36,6 @@ class agent(Thread):
     sched = fibra.schedule()
     self.sched = sched
 
-    # Start Connection
-    self.conn.start()
-
     # Initialize Tasklets
     info("agent starting")
     sched.install(self.idle())
@@ -52,6 +49,9 @@ class agent(Thread):
         self.load_actor(actor)
       except :
         warn("unable to load %s",actor,exc_info=True)
+
+    # Start Connection
+    self.conn.start()
 
     # Run
     info("agent operational")
