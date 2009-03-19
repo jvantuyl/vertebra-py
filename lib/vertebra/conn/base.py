@@ -29,8 +29,8 @@ class baseConnection(threading.Thread):
       try:
         self.connect()
         self.process()
-      except Exception,e:
-        info("Unhandled Error In Connection Processing: %s", e, exc_info=e)
+      except Exception, e:
+        info("Unhandled Error In Connection Processing: %s", e, exc_info=True)
         sleep(5.0)
 
   def connect(self):

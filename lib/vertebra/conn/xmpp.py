@@ -41,8 +41,8 @@ class xmppConnection(baseConnection):
       try:
         self.connect()
         self.process()
-      except Exception,e:
-        info("Unhandled Error In XMPP Processing: %s", e, exc_info=e)
+      except Exception, e:
+        info("Unhandled Error In XMPP Processing: %s", e, exc_info=True)
         sleep(5.0)
 
   def connect(self):
