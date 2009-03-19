@@ -1,0 +1,29 @@
+#!/usr/bin/env python2.6
+# vim:set filetype=python
+from sys import path
+path.append('./lib/') # FIXME: Install Wherever
+
+import logging
+import vertebra.config as config
+import vertebra.conn.xmpp as xmpp
+import vertebra.agent as agent
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s %(message)s')
+
+Config = config.config()
+Config.load()
+
+Conn = xmpp.xmppConnection()
+Agent = agent.agent()
+
+def deliver(stuff):
+  print stuff
+
+Conn.setup(Config,deliver)
+Agent.setup(Config,Conn)
+
+Agent.start()
+
+while 1: # This allows a KeyboardInterrupt to be raised in the main thread
+  Agent.join(0.25)

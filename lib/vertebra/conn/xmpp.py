@@ -22,16 +22,24 @@ from base import baseConnection
 IDLE_INTERVAL=0.25
 
 class xmppConnection(baseConnection):
-  def __init__(self,jid,password,deliver,server=None):
-    super(xmppConnection,self).__init__(deliver=deliver,name="xmpp_connection")
-    self.jid = pyxmpp.all.JID(jid)
+  def __init__(self):
+    super(xmppConnection,self).__init__(name="xmpp_connection")
+    self.setDaemon(True) # This Connection Can Tolerate Not Being Cleaned Up
+
+  def setup(self,config,deliver):
+    super(xmppConnection,self).setup(config,deliver)
+
+    self.jid = pyxmpp.all.JID(config['conn.xmpp.jid'])
+    try:
+      self.server = config['conn.xmpp.server']
+    except KeyError:
+      self.server = None
     if not self.jid.resource:
       self.jid = pyxmpp.all.JID(jid + '/vertebra-debug')
-    self.password = password
-    self.server = server
+    self.password = config['conn.xmpp.passwd']
+
     self.conn = None
     self.resetBackoff()
-    self.setDaemon(True) # This Connection Can Tolerate Not Being Cleaned Up
 
   def resetBackoff(self):
     self.backoff = exponential_backoff(0.4,30.0,2.0)

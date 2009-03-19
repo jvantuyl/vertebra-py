@@ -1,6 +1,6 @@
-from vertebra.actor import actor
-from vertebra.agent import agent
-from vertebra.calls import *
-from vertebra.job import job
+import vertebra.actor as actor
+import vertebra.agent as agent
+import vertebra.calls as calls
+import vertebra.job as job
 
 __all__ = [actor,agent,job]

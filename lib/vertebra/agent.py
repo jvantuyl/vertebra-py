@@ -1,47 +1,59 @@
 from __future__ import with_statement
 from threading import Thread,Condition
 from vertebra.job import job
+from vertebra.config import config
 from logging import debug,info,warn
 from types import ModuleType,StringTypes
 import fibra
 import fibra.handlers.sleep
 import time
-from sys import exit
+from sys import argv,exit
 
 # HACK HACK HACK
 fibra.handlers.sleep.time_func = time.time
 
 class agent(Thread):
-  def __init__(self,conn,actors=[],idle="wait"):
-    if isinstance(actors,StringTypes): # Catch strings here
-      actors = [actors]
-    super(agent,self).__init__(
-      target = self.main,
-      kwargs={'actors':actors, 'idle':idle}
-    )
-    self.conn = conn
+  def __init__(self):
+    super(agent,self).__init__(target = self.main)
+    self.config = config
     self.incalls = {}
     self.outcalls = {}
     self.jobs = []
-    self.jobexit = Condition()
     self.actors = []
-    self.sched = fibra.schedule()
+    self.setupped = False
+
+  def setup(self,config,connection):
+    self.setDaemon(True)
+    self.config = config
+    self.conn = connection
+    self.setupped = True
     debug("agent initialized")
 
-  def main(self,actors,idle):
-    sched = self.sched
+  def main(self):
+    assert self.setupped
+
+    # Set Up Scheduler
+    sched = fibra.schedule()
+    self.sched = sched
+
+    # Start Connection
     self.conn.start()
+
+    # Initialize Tasklets
     info("agent starting")
     sched.install(self.idle())
     sched.install(self.recv())
     sched.install(self.xmit())
+
+    # Load Actors
     info("loading actors")
-    self.load_actor('actor_core')
-    for actor in actors:
+    for actor in ['actor_core'] + self.config['agent.actors']:
       try:
         self.load_actor(actor)
       except :
         warn("unable to load %s",actor,exc_info=True)
+
+    # Run
     info("agent operational")
     self.sched.run()
     info("agent terminating")
@@ -49,7 +61,7 @@ class agent(Thread):
   def idle(self): # Puts the agent to sleep when there's nothing to be done
     from time import sleep
     ready = True
-    while 1:
+    while 1: # FIXME: Exit based on agent.idle
       yield 0.0
       sleep(0.05) # For now, punt by just sleeping a bit
 
@@ -62,53 +74,25 @@ class agent(Thread):
   def xmit(self): # Transmit Threadlet
     info("xmit: handler started")
     while 1:
-      yield 5.0
+      yield 1.0
       debug("xmit: processing")
       self.conn.wake()
 
   def load_actor(self,actor):
-    debug("Trying to load actor %s" % actor)
+    debug("Trying to load actor %r" % actor)
     if isinstance(actor,ModuleType):
       actor.load(self) # Ask the actor module to load itself into this agent
     elif isinstance(actor,StringTypes):
-      self.load_actor(__import__(actor))
+      mod = __import__(name='vertebra.actors.' + actor,fromlist=['load'])
+      debug('Imported %s as %r',actor,mod)
+      self.load_actor(mod)
     else:
       raise NotImplementedError     
 
   def do_exit(self):
-    exit(1)
-    yield None
+    yield exit(1)
 
   def stop(self):
     debug("start shutdown")
     self.sched.install(self.do_exit())
 
-if __name__ == '__main__':
-  import logging
-  import vertebra.conn.xmpp as vx
-  from getpass import getpass
-  import logging
-
-  def p(it):
-    print repr(it)
-
-  jid = raw_input("Jabber ID: ")
-  pwd = getpass("Password: ")
-  svr = raw_input("Server (or enter to use default): ")
-  jid = jid.strip()
-  if not svr.strip():
-    svr = svr.strip()
-
-  logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(levelname)s %(message)s')
-  Conn = vx.xmppConnection(jid=jid,password=pwd,server=svr,deliver=p)
-  Agent = agent(actors=['opstub'],idle='exit',conn=Conn)
-  Agent.start()
-  try:
-    while 1:
-      Agent.join(0.2)
-  except KeyboardInterrupt:
-    Agent.stop()
-  except:
-    Agent.stop()
-    raise

@@ -13,9 +13,9 @@ from os import fdopen,pipe
 from backoff import exponential_backoff
 
 class baseConnection(threading.Thread):
-  def __init__(self,deliver,name='connection'):
+  def setup(self,config,deliver):
+    self.config = config
     self.deliver = deliver
-    super(baseConnection,self).__init__(name=name)
     r,w = pipe()
     self.wake_recv,self.wake_send = fdopen(r,'r'), fdopen(w,'w')
 

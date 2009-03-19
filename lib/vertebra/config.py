@@ -143,7 +143,7 @@ class config(object):
                     ]:
       if idx in settings:
         return settings[idx]
-    raise IndexError('Value Not Found')
+    raise KeyError('Value Not Found')
 
   def __getitem__(self,idx):
     return self.bootstrap_get(idx)

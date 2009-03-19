@@ -1,4 +1,4 @@
-from actor import actor
+from vertebra.actor import actor
 from logging import debug,info
 
 def load(agent):
