@@ -1,6 +1,6 @@
 from __future__ import with_statement
 from threading import Thread,Condition
-from job import job
+from vertebra.job import job
 from logging import debug,info,warn
 from types import ModuleType,StringTypes
 import fibra
@@ -12,13 +12,14 @@ from sys import exit
 fibra.handlers.sleep.time_func = time.time
 
 class agent(Thread):
-  def __init__(self,actors=[],idle="wait"):
+  def __init__(self,conn,actors=[],idle="wait"):
     if isinstance(actors,StringTypes): # Catch strings here
       actors = [actors]
     super(agent,self).__init__(
       target = self.main,
       kwargs={'actors':actors, 'idle':idle}
     )
+    self.conn = conn
     self.incalls = {}
     self.outcalls = {}
     self.jobs = []
@@ -29,8 +30,9 @@ class agent(Thread):
 
   def main(self,actors,idle):
     sched = self.sched
+    self.conn.start()
     info("agent starting")
-    sched.install(self.idle())
+    #sched.install(self.idle())
     sched.install(self.recv())
     sched.install(self.xmit())
     info("loading actors")
@@ -45,7 +47,7 @@ class agent(Thread):
     info("agent terminating")
 
   def idle(self): # Puts the agent to sleep when there's nothing to be done
-    from time import sleep # FIXME: get this fixed in Fibra
+    from time import sleep
     ready = True
     while 1:
       yield 0.0
@@ -60,8 +62,9 @@ class agent(Thread):
   def xmit(self): # Transmit Threadlet
     info("xmit: handler started")
     while 1:
-      yield 1.0
+      yield 5.0
       debug("xmit: processing")
+      self.conn.wake()
 
   def load_actor(self,actor):
     debug("Trying to load actor %s" % actor)
@@ -82,14 +85,28 @@ class agent(Thread):
 
 if __name__ == '__main__':
   import logging
+  import vertebra.conn.xmpp as vx
+  from getpass import getpass
+  import logging
+
+  def p(it):
+    print repr(it)
+
+  jid = raw_input("Jabber ID: ")
+  pwd = getpass("Password: ")
+  svr = raw_input("Server (or enter to use default): ")
+  jid = jid.strip()
+  if not svr.strip():
+    svr = svr.strip()
 
   logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s')
-  Agent = agent(actors=['opstub'],idle='exit')
+  Conn = vx.xmppConnection(jid=jid,password=pwd,server=svr,deliver=p)
+  Agent = agent(actors=['opstub'],idle='exit',conn=Conn)
   Agent.start()
   try:
     while 1:
-      Agent.join(0.05)
+      Agent.join(0.2)
   except KeyboardInterrupt:
     Agent.stop()
   except:
