@@ -71,7 +71,10 @@ class xmppConnection(baseConnection):
     self.client = client
 
   def send(self,msg):
-    
+    # FIXME: Marshalling anyone?
+    if self.client:
+      self.client.send(msg)
+      
   def disconnected(self):
     # FIXME: What do we have to clean up here?  Anything?
     pass
