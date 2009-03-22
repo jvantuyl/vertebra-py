@@ -1,12 +1,9 @@
 """
-XMPP Connection for Vertebra
-============================
+Vertebra XMPP Client Extensions (for PyXMPP)
+============================================
 
-This XMPP connection runs as another thread.  In this thread, it will run in a
-loop, handling XMPP processing.
-
-Like all connections, it has to be given a thread-safe "receive" method, which
-will be called in its thread, and it has a thread-safe "transmit" method.
+These modifications preserve the CPU-friendly select-loop of PyXMPP, but add
+the ability to wake the client up to send outgoing data on our behalf.
 """
 
 import threading

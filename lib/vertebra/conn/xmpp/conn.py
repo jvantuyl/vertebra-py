@@ -15,9 +15,9 @@ from logging import debug,info,error
 from time import sleep
 from socket import error as socket_error
 from os import fdopen,pipe
-from backoff import exponential_backoff
-from vertebra.conn.vxmpp import vxClient
-from base import baseConnection
+from vertebra.conn.backoff import exponential_backoff
+from vertebra.conn.xmpp.client import vxClient
+from vertebra.conn.base import baseConnection
 
 IDLE_INTERVAL=0.25
 
