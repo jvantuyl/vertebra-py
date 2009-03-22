@@ -38,8 +38,13 @@ class xmppConnection(baseConnection):
       self.jid = pyxmpp.all.JID(jid + '/vertebra-debug')
     self.password = config['conn.xmpp.passwd']
 
-    self.conn = None
+    self.client = None
     self.resetBackoff()
+
+  def wake(self):
+    debug("waking up connection")
+    if self.client:
+      self.client.wake()
 
   def resetBackoff(self):
     self.backoff = exponential_backoff(0.4,30.0,2.0)
@@ -60,12 +65,13 @@ class xmppConnection(baseConnection):
     if self.server:
       kw['server'] = self.server
 
-    conn = vxClient(jid=self.jid,password=self.password,
-                    wait_pipe=self.wake_recv,**kw)
-    conn.connect()
+    client = vxClient(jid=self.jid,password=self.password,**kw)
+    client.connect()
     debug("Connection Established")
-    self.conn = conn
+    self.client = client
 
+  def send(self,msg):
+    
   def disconnected(self):
     # FIXME: What do we have to clean up here?  Anything?
     pass
@@ -76,7 +82,7 @@ class xmppConnection(baseConnection):
 
   def process(self):
     debug("start processing")
-    self.conn.loop()
+    self.client.loop()
     debug("done processing")
 
 if __name__ == '__main__':
