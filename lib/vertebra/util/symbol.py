@@ -1,4 +1,5 @@
 from weakref import WeakValueDictionary
+import re
 
 __all__ = ['symbol','sym','factory']
 
@@ -25,6 +26,8 @@ class symbol(object):
   def __repr__(self):
     return '(%s %s)' % (self.__class__.__name__,self.__symname__,)
 
+SYMLOCAL = re.compile('^_.*$')
+
 class factory(object):
   """
      A class to facilitate creating sentinels by opportunistically
@@ -34,7 +37,7 @@ class factory(object):
     self._what = cls
 
   def __getattribute__(self,name):
-    if '_' in name:
+    if SYMLOCAL.match(name):
       return super(factory,self).__getattribute__(name)
     else:
       return self._what(name)
