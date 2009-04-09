@@ -20,6 +20,7 @@ setup(
     'vertebra.util',
   ],
   scripts=['bin/agent'],
+  test_suite='tests',
   provides=['vertebra (0.1)'],
   requires=[
     'sys(>=2.6)',
