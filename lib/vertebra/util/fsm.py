@@ -3,9 +3,12 @@ from vertebra.util.symbol import symbol,factory
 __all__ = ['msg','st','fsm']
 
 class message(symbol): pass
+class enter(message): pass
+class exit(message): pass
 class state(symbol): pass
 
-msg = factory(message)
+ent = factory(enter)
+ext = factor(exit)
 st = factory(state)
 
 class fsm(object): # NOTE: Technically, this is a Transducer (Mealey Machine)

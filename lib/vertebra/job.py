@@ -38,8 +38,6 @@ class job(object):
     self.token = tok
     self.incall = incall
 
-  def think(self):
-    raise NotImplementedError
-
   def __repr__(self):
     return '<job "%s">' % self.token
+
