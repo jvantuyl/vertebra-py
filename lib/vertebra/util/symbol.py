@@ -21,10 +21,18 @@ class symbol(object):
     # new instance too early
 
   def __getnewargs__(self):
-    return tuple([self.__symname__])
+    # WARNING: symbols must be pickled with protocol 2+ or things explode
+    return tuple([self.symname()])
+
+  def __getstate__(self):
+    # WARNING: symbols must be pickled with protocol 2+ or things explode
+    return False # Don't pickle any state
 
   def __repr__(self):
-    return '(%s %s)' % (self.__class__.__name__,self.__symname__,)
+    return '(%s %s)' % (self.__class__.__name__,self.symname(),)
+
+  def symname(self):
+    return self.__symname__
 
 SYMLOCAL = re.compile('^_.*$')
 
