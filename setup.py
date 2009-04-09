@@ -20,7 +20,7 @@ setup(
     'vertebra.util',
   ],
   scripts=['bin/agent'],
-  test_suite='tests',
+  test_suite='nose.collector',
   provides=['vertebra (0.1)'],
   requires=[
     'sys(>=2.6)',

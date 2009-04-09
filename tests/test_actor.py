@@ -1,8 +1,7 @@
-import unittest
 from vertebra.actor import actor
 
-class ResSetup(unittest.TestCase):
-  def testInstatiate(self):
-    """can instantiate a base actor"""
+class test_actor:
+  def test_instantiate(self):
+    """actor: can instantiate a base actor"""
     a = actor()
-    self.assertTrue(isinstance(a,actor))
+    assert isinstance(a,actor), "instantiated actor is actually an actor"
