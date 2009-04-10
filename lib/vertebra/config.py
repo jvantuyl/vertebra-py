@@ -47,6 +47,7 @@ ARGMAP = {
   'P': ('conn.xmpp.passwd',1,str),
   'H': ('conn.xmpp.server',1,str),
   'X': ('magic',3,lambda *X: tuple(map(int,X))),
+  'Z': ('toggletest',0,bool),
 }
 
 ARG_RE = re.compile('^-([' + ''.join(ARGMAP) + '])$')
@@ -75,8 +76,8 @@ class config(object):
         if match: # Matched an Arg Code
           (arg_code,) = match.groups() # Extract Code
           (cur_arg,arg_count,arg_cvt) = ARGMAP[arg_code] # Find Arg Info
-          if arg_count == 0: # No Count Means Toggle Arg
-            config[cur_arg] = not self.default_config[cur_arg] # Flip Default
+          if arg_count == 0: # No Count Means Toggle Arg, Flip Default
+            config[cur_arg] = not self.default_config.get(cur_arg,False)
             cur_arg = None # No Parameters
           arg_stack = [] # Zero Stack
         else:
@@ -120,7 +121,7 @@ class config(object):
     except IOError:
       warning("Unable to Open Config File: %s", config_file)
     except Exception,e:
-      warning("Unexpected Loading Configuration: %s, %e",config_file,e,
+      warning("Unexpected Loading Configuration: %s, %r",config_file,e,
               exc_info=True)
 
     self.loaded = True
@@ -134,7 +135,7 @@ class config(object):
 
   def bootstrap_get(self,idx):
     if not self.loaded:
-      raise Exception("Config Not Loaded")
+      raise Exception("Config Not Loaded") # TODO: Make Custom Exception
     for settings in [
                       self.cli_config,
                       self.file_config,
