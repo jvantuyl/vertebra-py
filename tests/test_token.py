@@ -1,6 +1,8 @@
 from vertebra.token import token,TOKEN_HALF_MAX,TOKEN_HALF_BITS
 from random import randint
+from re import compile
 
+TOKEN_REPR = compile('<token "[0-9A-Fa-f]{16}:[0-9A-Fa-f]{16}">')
 class test_token_creation:
   def test_from_string(self):
     """token.create: can create from a string"""
@@ -22,7 +24,12 @@ class test_token_creation:
     assert tok == c
     assert tbase == b
     assert tparent == a
-  
+
+  def test_token_repr(self):
+    """token.create: text representation"""
+    tok = token()
+    assert TOKEN_REPR.match( repr(tok) )
+    
 class test_token_zero:
   def make_zero(self):
     return token(0)
