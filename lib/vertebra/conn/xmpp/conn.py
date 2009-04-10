@@ -22,10 +22,6 @@ from vertebra.conn.base import baseConnection
 IDLE_INTERVAL=0.25
 
 class xmppConnection(baseConnection):
-  def __init__(self):
-    super(xmppConnection,self).__init__(name="xmpp_connection")
-    self.setDaemon(True) # This Connection Can Tolerate Not Being Cleaned Up
-
   def setup(self,config,deliver):
     super(xmppConnection,self).setup(config,deliver)
 
@@ -50,7 +46,7 @@ class xmppConnection(baseConnection):
     self.backoff = exponential_backoff(0.4,30.0,2.0)
 
   def run(self):
-    while 1:
+    while self.keep_running:
       try:
         self.connect()
         self.process()
@@ -85,7 +81,8 @@ class xmppConnection(baseConnection):
 
   def process(self):
     debug("start processing")
-    self.client.loop()
+    while self.keep_running:
+      self.client.loop(self,timeout=1)
     debug("done processing")
 
 if __name__ == '__main__':

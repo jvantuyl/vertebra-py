@@ -5,19 +5,31 @@ Base Connection for Vertebra
 This is the base all of Vertebra connections.
 """
 
-import threading
+from threading import Thread,currentThread
 from logging import debug,info,error
 from time import sleep
 from socket import error as socket_error
 from backoff import exponential_backoff
 
-class baseConnection(threading.Thread):
-  def setup(self,config,deliver):
+class baseConnection(object):
+  def setup(self,config,deliver,name='Connection'):
+    super(baseConnection,self).__init__()
     self.config = config
     self.deliver = deliver
+    self.thread = Thread(target=self.run,name=name)
+    self.keep_running = True
 
   def wake(self): # Called from Main Thread
     raise NotImplemented
+
+  def start(self):
+    self.thread.start()
+
+  def stop(self):
+    self.keep_running = False
+    self.wake()
+    if not (self.thread.isDaemon() or currentThread() == self.thread):
+      self.thread.join()
 
   def run(self):
     while 1:

@@ -73,6 +73,16 @@ class vxClient(pyxmpp.all.Client):
     pyxmpp.all.Client.__init__(self,*args,**kwargs) #Client is old-style class
     self.stream_class = vxClientStream # Use Our Modified Stream Class
 
+  def loop(self,conn,timeout=1):
+    while conn.keep_running:
+      debug("loop")
+      stream=self.get_stream()
+      if not stream:
+        break
+      act=stream.loop_iter(timeout)
+      if not act:
+        self.idle()
+
   def wake(self):
     if self.stream:
       self.stream.wake()
