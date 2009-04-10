@@ -19,3 +19,6 @@ class outcall_local(outcall):
 class outcall_net(outcall):
   pass
 
+# Mocks for Testing
+class mock_incall(object):
+  pass

@@ -2,7 +2,7 @@ from random import randint
 from vertebra.token import token
 
 class job(object):
-  def init(self,incall,tok = None):
+  def setup(self,incall,tok = None):
     if tok is None:
       tok = token()
     self.token = tok
