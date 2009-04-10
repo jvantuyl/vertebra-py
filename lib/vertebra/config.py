@@ -43,21 +43,18 @@ DEFAULT_CONFIG = {
 ARGMAP = {
   'a': ('agent.actors',1,' '.split),
   'c': ('agent.configfile',1,str),
-  'U': ('agent.xmpp_user',1,str),
-  'P': ('agent.xmpp_pass',1,str),
-  'H': ('agent.xmpp_server',1,str),
+  'U': ('conn.xmpp.jid',1,str),
+  'P': ('conn.xmpp.passwd',1,str),
+  'H': ('conn.xmpp.server',1,str),
   'X': ('magic',3,lambda *X: tuple(map(int,X))),
 }
 
 ARG_RE = re.compile('^-([' + ''.join(ARGMAP) + '])$')
 
 class config(object):
-  def __init__(self,filename=None):
+  def __init__(self):
     super(config,self).__init__()
     self.default_config = DEFAULT_CONFIG
-    if not filename:
-      filename = DEFAULT_CONFIG['agent.configfile']
-    self.filename = filename
     self.config = None
     self.loaded = False
 
@@ -91,20 +88,22 @@ class config(object):
             config[cur_arg] = arg_cvt(*arg_stack)
             debug("cli config: %s=%r",cur_arg,config[cur_arg])
           except Exception:
-            warning("invalid argument: %s (-%s), %r",cur_arg,arg_code,arg_stack,
-                    exc_info=True)
+            warning("invalid argument: %s (-%s), %r",cur_arg,arg_code,
+                    arg_stack,exc_info=True)
           cur_arg = None
     if cur_arg is not None:
       warning("incomplete argument: %s (-%s), %r",cur_arg,arg_code,arg_stack)
     self.cli_config = config
 
-  def load(self,args=[]):
+  def load(self,config_file=None,args=[]):
     self.config = {}
     self.default_config = deepcopy(DEFAULT_CONFIG)
     self.process_args(args)
     self.file_config = {}
 
-    if 'agent.configfile' in self.cli_config:
+    if config_file:
+      pass
+    elif 'agent.configfile' in self.cli_config:
       config_file = self.cli_config['agent.configfile']
     elif 'agent.configfile' in self.default_config:
       config_file = self.default_config['agent.configfile']
@@ -144,6 +143,11 @@ class config(object):
       if idx in settings:
         return settings[idx]
     raise KeyError('Value Not Found')
+
+  def __contains__(self,idx):
+    return idx in self.cli_config or \
+           idx in self.file_config or \
+           idx in self.default_config
 
   def __getitem__(self,idx):
     return self.bootstrap_get(idx)
