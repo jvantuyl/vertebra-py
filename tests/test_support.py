@@ -41,3 +41,7 @@ class test_raises:
       return True
 
     assert False, "shouldn't ever make it here"
+
+class test_suppress_logging:
+  # FIXME: implement a test of this
+  pass

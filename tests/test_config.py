@@ -1,8 +1,9 @@
 from vertebra.config import config,DEFAULT_CONFIG
 from os import tempnam,unlink
 from warnings import catch_warnings
-from support import raises
+from support import raises,suppress_logging
 
+# Test Data
 bad_data = "["
 
 sample_data0 = """
@@ -15,6 +16,7 @@ sample_data1 = """
 agent.actors: [qux]
 """
 
+# Helpful Decorator
 def swapconfigdefault(tempconfig):
   """decorator to safely swap default config file around during function run"""
   def decorate(f):
@@ -33,6 +35,7 @@ def swapconfigdefault(tempconfig):
     return func
   return decorate
 
+# Tests
 class test_config:
   def setup(self):
     self.tempfiles = {}
@@ -76,6 +79,7 @@ class test_config:
     assert 'conn.xmpp.jid' in cfg
     assert cfg['conn.xmpp.passwd'] == 'supersekret'
 
+  @suppress_logging
   @swapconfigdefault("/dev/null")
   def test_load_empty_config(self):
     """config: load empty config?"""
@@ -88,22 +92,26 @@ class test_config:
     cfg = self.make_config(None)
     assert 'conn.xmpp.passwd' not in cfg
 
+  @suppress_logging
   def test_no_config(self):
     """config: no config?"""
     cfg = self.make_config(None,'-c','nonexistant file')
     assert 'conn.xmpp.passwd' not in cfg
     # TODO: Test for Warning?
 
+  @suppress_logging
   @swapconfigdefault(None)
   def test_no_config(self):
     cfg = self.make_config(None)
     # TODO: Test for Warning?
     
+  @suppress_logging
   def test_bad_config(self):
     """config: config doesn't parse?"""
     cfg = self.make_config('bad_sample')
     # TODO: Test for Warning?
 
+  @suppress_logging
   def test_missing_config(self):
     """config: file missing?"""
     cfg = self.make_config(None,'-c','i_dont_exist')
@@ -127,6 +135,7 @@ class test_config:
     assert 'magic' in cfg
     assert list(cfg['magic']) == [1,2,4]
 
+  @suppress_logging
   def test_unrecognized_arg(self):
     """config: unrecognized arg?"""
     cfg = self.make_config('sample0','-BLAH')
@@ -137,10 +146,12 @@ class test_config:
     assert 'toggletest' in cfg
     assert cfg['toggletest']
 
+  @suppress_logging
   def test_config_arg_parse_error(self):
     cfg = self.make_config('sample0','-X','1','2','a')
     # TODO: Test for Warning?
 
+  @suppress_logging
   def test_arg_short(self):
     """config: args?"""
     cfg = self.make_config('sample0','-X','1','2')
