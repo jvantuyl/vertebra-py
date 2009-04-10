@@ -12,9 +12,30 @@ from sys import argv,exit
 # HACK HACK HACK
 fibra.handlers.sleep.time_func = time.time
 
-class agent(Thread):
+class base_agent(object):
+  """Base Implementation and Interface for Vertebra Agent"""
+  # Interface
+  def setup(self,config,connection): raise NotImplementedError
+  def start(self): raise NotImplementedError
+  def stop(self): raise NotImplementedError
+
+  # Implementation
+  def load_actor(self,actor):
+    debug("Trying to load actor %r" % actor)
+    if isinstance(actor,ModuleType):
+      actor.load(self) # Ask the actor module to load itself into this agent
+    elif isinstance(actor,StringTypes):
+      mod = __import__(name='vertebra.actors.' + actor,fromlist=['load'])
+      debug('Imported %s as %r',actor,mod)
+      self.load_actor(mod)
+    else:
+      raise NotImplementedError
+
+class agent(base_agent):
+  """Vertebra Agent Implementation"""
   def __init__(self):
-    super(agent,self).__init__(target = self.main)
+    super(agent,self).__init__()
+    self.thread = Thread(target = self.main)
     self.config = config
     self.incalls = {}
     self.outcalls = {}
@@ -23,7 +44,7 @@ class agent(Thread):
     self.setupped = False
 
   def setup(self,config,connection):
-    self.setDaemon(True)
+    self.thread.setDaemon(True)
     self.config = config
     self.conn = connection
     self.setupped = True
@@ -78,21 +99,24 @@ class agent(Thread):
       debug("xmit: processing")
       self.conn.wake()
 
-  def load_actor(self,actor):
-    debug("Trying to load actor %r" % actor)
-    if isinstance(actor,ModuleType):
-      actor.load(self) # Ask the actor module to load itself into this agent
-    elif isinstance(actor,StringTypes):
-      mod = __import__(name='vertebra.actors.' + actor,fromlist=['load'])
-      debug('Imported %s as %r',actor,mod)
-      self.load_actor(mod)
-    else:
-      raise NotImplementedError     
-
   def do_exit(self):
     yield exit(1)
 
+  def start(self):
+    self.thread.start()
+
+  def join(self,*args,**kwargs):
+    self.thread.join(*args,**kwargs)
+
   def stop(self):
     debug("start shutdown")
-    self.sched.install(self.do_exit())
+    self.sched.install(self.do_exit()) # FIXME: Is this threadsafe?
 
+class mock_agent(base_agent):
+  """Mock Agent for Testing"""
+  def setup(self,config,connection):
+    self.config = config
+    self.connection = connection
+
+  def start(self): pass
+  def stop(self): pass
