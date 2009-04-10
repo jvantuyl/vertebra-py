@@ -1,5 +1,6 @@
 from vertebra.util import *
 from vertebra.util.symbol import *
+from re import compile
 
 class test_hex_functions:
   def test_hexify(self):
@@ -20,6 +21,7 @@ class test_hex_functions:
     assert unhexify('00ff') == 255
     assert unhexify('0100') == 256
 
+SYMBOL_REPR = compile('\(symbol .*\)')
 class test_symbol:
   def test_create(self):
     'util.symbol: basic creation'
@@ -27,6 +29,10 @@ class test_symbol:
     assert isinstance(sy_a,symbol)
     assert sy_a.symname() == 'abc'
   
+  def test_repr(self):
+    'util.symbol: text representation'
+    assert SYMBOL_REPR.match( repr( sym.a ) )
+
   def test_factory(self):
     'util.symbol: factory creation'
     fact_repr = '%r creates symbols' % sym # for code coverage
