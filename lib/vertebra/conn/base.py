@@ -48,9 +48,3 @@ class baseConnection(object):
   def process(self):
     raise NotImplemented
 
-  def disconnected(self):
-    pass
-
-  def reconnected(self):
-    pass
-
