@@ -17,9 +17,10 @@ class baseConnection(object):
     self.deliver = deliver
     self.thread = Thread(target=self.run,name=name)
     self.keep_running = True
+    self.crash_fatal = False
 
   def wake(self): # Called from Main Thread
-    raise NotImplemented
+    raise NotImplementedError()
 
   def start(self):
     self.thread.start()
@@ -40,11 +41,17 @@ class baseConnection(object):
         self.process()
       except Exception, e:
         info("Unhandled Error In Connection Processing: %s", e, exc_info=True)
+        if self.handle_crash:
+          break
         sleep(5.0)
 
+  def handle_crash(self): # Returns True if crash is handled
+    error('connection crashed in main loop')
+    return self.crash_fatal
+
   def connect(self):
-    raise NotImplemented
+    raise NotImplementedError()
 
   def process(self):
-    raise NotImplemented
+    raise NotImplementedError()
 
