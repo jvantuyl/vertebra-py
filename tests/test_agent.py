@@ -1,4 +1,4 @@
-from vertebra.agent import mock_agent
+from mock_agent import mock_agent
 from support import raises
 
 class agent_tests:

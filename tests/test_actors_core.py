@@ -1,4 +1,4 @@
-from vertebra.agent import mock_agent
+from mock_agent import mock_agent
 
 def test_load_core():
   """actors.core: actor loads"""

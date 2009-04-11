@@ -112,11 +112,3 @@ class agent(base_agent):
     debug("start shutdown")
     self.sched.install(self.do_exit()) # FIXME: Is this threadsafe?
 
-class mock_agent(base_agent):
-  """Mock Agent for Testing"""
-  def setup(self,config,connection):
-    self.config = config
-    self.connection = connection
-
-  def start(self): pass
-  def stop(self): pass
