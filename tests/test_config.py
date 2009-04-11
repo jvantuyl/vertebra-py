@@ -36,7 +36,7 @@ def swapconfigdefault(tempconfig):
   return decorate
 
 # Tests
-class test_config:
+class test_0_config:
   def setup(self):
     self.tempfiles = {}
     self.create_temp('sample0',sample_data0)
@@ -63,18 +63,18 @@ class test_config:
     [ unlink(target) for target in self.tempfiles.itervalues() ]
 
   @raises(Exception)
-  def test_not_loaded(self):
+  def test_00_not_loaded(self):
     """config: SHOULD give an error if accessed before config is loaded"""
     cfg = config()
     x = cfg['foo']
     
-  def test_defaults(self):
+  def test_01_defaults(self):
     """config: defaults?"""
     cfg = self.make_config('sample0')
     assert 'agent.exit' in cfg
     assert cfg['agent.exit'] == 'idle'
 
-  def test_file(self):
+  def test_02_file(self):
     """config: file?"""
     cfg = self.make_config('sample0')
     assert 'conn.xmpp.jid' in cfg
@@ -82,89 +82,89 @@ class test_config:
 
   @suppress_logging()
   @swapconfigdefault("/dev/null")
-  def test_load_empty_config(self):
+  def test_03_load_empty_config(self):
     """config: load empty config?"""
     cfg = self.make_config(None)
     # TODO: Test for Warning?
 
   @suppress_logging()
   @swapconfigdefault("/dev/null")
-  def test_load_empty_config_defaults(self):
+  def test_04_load_empty_config_defaults(self):
     """config: load empty config, get defaults?"""
     cfg = self.make_config(None)
     assert 'conn.xmpp.passwd' not in cfg
 
   @suppress_logging()
   @swapconfigdefault(None)
-  def test_no_config_at_all(self):
+  def test_05_no_config_at_all(self):
     """config: no config at all?"""
     cfg = self.make_config(None)
 
   @suppress_logging()
-  def test_missing_config_file(self):
+  def test_06_missing_config_file(self):
     """config: nonexistant config file?"""
     cfg = self.make_config(None,'-c','nonexistant file')
     assert 'conn.xmpp.passwd' not in cfg
     # TODO: Test for Warning?
 
   @suppress_logging()
-  def test_bad_config(self):
+  def test_07_bad_config(self):
     """config: config doesn't parse?"""
     cfg = self.make_config('bad_sample')
     # TODO: Test for Warning?
 
   @suppress_logging()
-  def test_missing_config(self):
+  def test_08_missing_config(self):
     """config: file missing?"""
     cfg = self.make_config(None,'-c','i_dont_exist')
     # TODO: Test for Warning?
     
   @suppress_logging()
   @swapconfigdefault(None)
-  def test_cli_configfile(self):
+  def test_09_cli_configfile(self):
     """config: get config file from command line?"""
     cfg = self.make_config(None,'-c','/dev/null')
     used_config = cfg['agent.configfile']
     assert used_config == '/dev/null'
 
-  def test_config_keys(self):
+  def test_10_config_keys(self):
     """config: key enumeration?"""
     cfg = self.make_config('sample0')
     assert len( cfg.keys() )
 
-  def test_args(self):
+  def test_11_args(self):
     """config: args?"""
     cfg = self.make_config('sample0','-X','1','2','4')
     assert 'magic' in cfg
     assert list(cfg['magic']) == [1,2,4]
 
   @suppress_logging()
-  def test_unrecognized_arg(self):
+  def test_12_unrecognized_arg(self):
     """config: unrecognized arg?"""
     cfg = self.make_config('sample0','-BLAH')
     # TODO: Test for Warning?
     
-  def test_config_toggle_arg(self):
+  def test_13_config_toggle_arg(self):
     """config: toggle argument, nonexistent default"""
     cfg = self.make_config('sample0','-Z')
     assert 'toggletest' in cfg
     assert cfg['toggletest']
 
   @suppress_logging()
-  def test_config_arg_parse_error(self):
+  def test_14_config_arg_parse_error(self):
     """config: argument fails its parse function?"""
     cfg = self.make_config('sample0','-X','1','2','a')
     # TODO: Test for Warning?
 
   @suppress_logging()
-  def test_arg_short(self):
+  def test_15_arg_short(self):
     """config: data runs short for argument?"""
     cfg = self.make_config('sample0','-X','1','2')
     assert 'magic' not in cfg
     # TODO: Test for Warning?
 
   @raises(KeyError)
-  def test_missing(self):
+  def test_16_missing(self):
     """config: missing values raise error on []?"""
     cfg = self.make_config('sample0')
     cfg['i am not here']

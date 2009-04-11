@@ -2,7 +2,7 @@
 
 from support import *
 
-class test_raises:
+class test_00_raises:
   def divbyzero(self):
     return 1 / 0 # Raises ZeroDivisionError
 
@@ -16,21 +16,21 @@ class test_raises:
     return 2+2
 
   @raises(ZeroDivisionError)
-  def test_catch1(self):
+  def test_00_catch(self):
     """support: catch 1/0?"""
     self.divbyzero()
 
   @raises(TypeError)
-  def test_catch2(self):
+  def test_01_catch(self):
     """support: catch int + str?"""
     self.intplusstr()
 
   @raises(IndexError)
-  def test_catch3(self):
+  def test_02_catch(self):
     """support: catch walk off array?"""
     self.outofbounds()
 
-  def test_miss(self):
+  def test_03_miss(self):
     """support: no raise == fail?"""
     @raises(TypeError)
     def f(): self.happy()
@@ -42,6 +42,6 @@ class test_raises:
 
     assert False, "shouldn't ever make it here"
 
-class test_suppress_logging:
+class test_01_suppress_logging:
   # FIXME: implement a test of this
   pass

@@ -4,14 +4,14 @@ from re import compile
 
 JOB_REPR = compile('<job .*>')
 
-class test_job:
-  def test_instantiate(self):
+class test_00_job:
+  def test_00_instantiate(self):
     """job: create job?"""
     i = mock_incall()
     j = job()
     j.setup(i)
 
-  def test_repr(self):
+  def test_01_repr(self):
     """job: displays correctly?"""
     i = mock_incall()
     j = job()

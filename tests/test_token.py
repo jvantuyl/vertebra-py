@@ -3,17 +3,17 @@ from random import randint
 from re import compile
 
 TOKEN_REPR = compile('<token "[0-9A-Fa-f]{16}:[0-9A-Fa-f]{16}">')
-class test_token_creation:
-  def test_from_string(self):
+class test_00_token_creation:
+  def test_00_instantiate(self):
+    """token.create: token factory makes tokens"""
+    assert isinstance(token(),token), "token factory creates tokens"
+
+  def test_01_from_string(self):
     """token.create: can create from a string"""
     tok = token.from_string('0123456789ABCDEF:FEDCBA9876543210')
     assert tok == 0x0123456789ABCDEFFEDCBA9876543210
 
-  def test_instantiate(self):
-    """token.create: token factory makes tokens"""
-    assert isinstance(token(),token), "token factory creates tokens"
-
-  def test_from_parts(self):
+  def test_02_from_parts(self):
     """token.create: creates from parts"""
     a = randint(0,TOKEN_HALF_MAX) # hi
     b = randint(0,TOKEN_HALF_MAX) # lo
@@ -25,30 +25,30 @@ class test_token_creation:
     assert tbase == b
     assert tparent == a
 
-  def test_token_repr(self):
+  def test_03_token_repr(self):
     """token.create: text representation"""
     tok = token()
     assert TOKEN_REPR.match( repr(tok) )
     
-class test_token_zero:
+class test_01_token_zero:
   def make_zero(self):
     return token(0)
     
-  def test_instantiate(self):
+  def test_00_instantiate(self):
     """token.zero: can instantiate a zero token"""
     assert self.make_zero() == 0, "token factory creates tokens"
 
-  def test_evals_true(self):
+  def test_01_evals_true(self):
     """token.zero: even zero token tests true"""
     assert bool(self.make_zero()) == True, "zero token tests true"
 
-class test_parentage:
-  def test_init_job(self):
+class test_02_parentage:
+  def test_00_init_job(self):
     """token.spawn: create top-level token"""
     tok = token()
     assert tok.parent() == 0
   
-  def test_sub_jobs(self):
+  def test_01_sub_jobs(self):
     """token.spawn: create consistent sub-tokens"""
     top = token()
     s0 = top.spawn()
