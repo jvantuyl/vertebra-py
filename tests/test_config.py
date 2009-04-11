@@ -101,12 +101,6 @@ class test_config:
     # TODO: Test for Warning?
 
   @suppress_logging()
-  @swapconfigdefault(None)
-  def test_no_config(self):
-    cfg = self.make_config(None)
-    # TODO: Test for Warning?
-    
-  @suppress_logging()
   def test_bad_config(self):
     """config: config doesn't parse?"""
     cfg = self.make_config('bad_sample')
