@@ -13,7 +13,6 @@ from backoff import exponential_backoff
 
 class baseConnection(object):
   def setup(self,config,deliver,name='Connection'):
-    super(baseConnection,self).__init__()
     self.config = config
     self.deliver = deliver
     self.thread = Thread(target=self.run,name=name)
@@ -29,10 +28,13 @@ class baseConnection(object):
     self.keep_running = False
     self.wake()
     if not (self.thread.isDaemon() or currentThread() == self.thread):
-      self.thread.join()
+      self.join()
+
+  def join(self,*args,**kwargs):
+    self.thread.join(*args,**kwargs)
 
   def run(self):
-    while 1:
+    while self.keep_running:
       try:
         self.connect()
         self.process()
