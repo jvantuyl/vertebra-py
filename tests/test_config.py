@@ -79,40 +79,40 @@ class test_config:
     assert 'conn.xmpp.jid' in cfg
     assert cfg['conn.xmpp.passwd'] == 'supersekret'
 
-  @suppress_logging
+  @suppress_logging()
   @swapconfigdefault("/dev/null")
   def test_load_empty_config(self):
     """config: load empty config?"""
     cfg = self.make_config(None)
     # TODO: Test for Warning?
 
-  @suppress_logging
+  @suppress_logging()
   @swapconfigdefault("/dev/null")
   def test_load_empty_config_defaults(self):
     """config: load empty config, get defaults?"""
     cfg = self.make_config(None)
     assert 'conn.xmpp.passwd' not in cfg
 
-  @suppress_logging
+  @suppress_logging()
   def test_no_config(self):
     """config: no config?"""
     cfg = self.make_config(None,'-c','nonexistant file')
     assert 'conn.xmpp.passwd' not in cfg
     # TODO: Test for Warning?
 
-  @suppress_logging
+  @suppress_logging()
   @swapconfigdefault(None)
   def test_no_config(self):
     cfg = self.make_config(None)
     # TODO: Test for Warning?
     
-  @suppress_logging
+  @suppress_logging()
   def test_bad_config(self):
     """config: config doesn't parse?"""
     cfg = self.make_config('bad_sample')
     # TODO: Test for Warning?
 
-  @suppress_logging
+  @suppress_logging()
   def test_missing_config(self):
     """config: file missing?"""
     cfg = self.make_config(None,'-c','i_dont_exist')
@@ -136,7 +136,7 @@ class test_config:
     assert 'magic' in cfg
     assert list(cfg['magic']) == [1,2,4]
 
-  @suppress_logging
+  @suppress_logging()
   def test_unrecognized_arg(self):
     """config: unrecognized arg?"""
     cfg = self.make_config('sample0','-BLAH')
@@ -147,12 +147,12 @@ class test_config:
     assert 'toggletest' in cfg
     assert cfg['toggletest']
 
-  @suppress_logging
+  @suppress_logging()
   def test_config_arg_parse_error(self):
     cfg = self.make_config('sample0','-X','1','2','a')
     # TODO: Test for Warning?
 
-  @suppress_logging
+  @suppress_logging()
   def test_arg_short(self):
     """config: args?"""
     cfg = self.make_config('sample0','-X','1','2')

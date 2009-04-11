@@ -20,14 +20,17 @@ def raises(e):
     return func
   return decorate
 
-def suppress_logging(f):
+def suppress_logging():
   """decorator to suppress logging during a function call"""
-  def func(*args,**kwargs):
-    logging.disable(CRITICAL)
-    try:
-      return f(*args,**kwargs)
-    finally:
-      logging.disable(NOTSET)
-  func.func_name = f.func_name
-  func.func_doc = f.func_doc
-  return func
+  def decorate(f):
+    """decorator to suppress logging during a function call"""
+    def func(*args,**kwargs):
+      logging.disable(CRITICAL)
+      try:
+        return f(*args,**kwargs)
+      finally:
+        logging.disable(NOTSET)
+    func.func_name = f.func_name
+    func.func_doc = f.func_doc
+    return func
+  return decorate
