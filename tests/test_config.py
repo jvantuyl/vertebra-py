@@ -64,6 +64,7 @@ class test_config:
 
   @raises(Exception)
   def test_not_loaded(self):
+    """config: SHOULD give an error if accessed before config is loaded"""
     cfg = config()
     x = cfg['foo']
     
@@ -94,8 +95,14 @@ class test_config:
     assert 'conn.xmpp.passwd' not in cfg
 
   @suppress_logging()
-  def test_no_config(self):
-    """config: no config?"""
+  @swapconfigdefault(None)
+  def test_no_config_at_all(self):
+    """config: no config at all?"""
+    cfg = self.make_config(None)
+
+  @suppress_logging()
+  def test_missing_config_file(self):
+    """config: nonexistant config file?"""
     cfg = self.make_config(None,'-c','nonexistant file')
     assert 'conn.xmpp.passwd' not in cfg
     # TODO: Test for Warning?
@@ -112,6 +119,7 @@ class test_config:
     cfg = self.make_config(None,'-c','i_dont_exist')
     # TODO: Test for Warning?
     
+  @suppress_logging()
   @swapconfigdefault(None)
   def test_cli_configfile(self):
     """config: get config file from command line?"""
@@ -137,18 +145,20 @@ class test_config:
     # TODO: Test for Warning?
     
   def test_config_toggle_arg(self):
+    """config: toggle argument, nonexistent default"""
     cfg = self.make_config('sample0','-Z')
     assert 'toggletest' in cfg
     assert cfg['toggletest']
 
   @suppress_logging()
   def test_config_arg_parse_error(self):
+    """config: argument fails its parse function?"""
     cfg = self.make_config('sample0','-X','1','2','a')
     # TODO: Test for Warning?
 
   @suppress_logging()
   def test_arg_short(self):
-    """config: args?"""
+    """config: data runs short for argument?"""
     cfg = self.make_config('sample0','-X','1','2')
     assert 'magic' not in cfg
     # TODO: Test for Warning?
