@@ -86,6 +86,7 @@ class test_config:
     cfg = self.make_config(None)
     # TODO: Test for Warning?
 
+  @suppress_logging
   @swapconfigdefault("/dev/null")
   def test_load_empty_config_defaults(self):
     """config: load empty config, get defaults?"""
