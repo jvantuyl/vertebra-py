@@ -25,10 +25,10 @@ class baseConnection(object):
   def start(self):
     self.thread.start()
 
-  def stop(self):
+  def stop(self,wait=True): # API, runs outside of thread
     self.keep_running = False
     self.wake()
-    if not (self.thread.isDaemon() or currentThread() == self.thread):
+    if wait and not self.thread.isDaemon() and currentThread() != self.thread:
       self.join()
 
   def join(self,*args,**kwargs):
@@ -40,14 +40,17 @@ class baseConnection(object):
         self.connect()
         self.process()
       except Exception, e:
-        info("Unhandled Error In Connection Processing: %s", e, exc_info=True)
-        if self.handle_crash:
+        if not self.handle_crash(e):
           break
-        sleep(5.0)
+        for i in range(30): # Delay 3 seconds, but check for exit
+          sleep(0.1)
+          if not self.keep_running:
+            break
 
-  def handle_crash(self): # Returns True if crash is handled
-    error('connection crashed in main loop')
-    return self.crash_fatal
+  def handle_crash(self,e): # Returns True if crash is handled
+    error("Unhandled Error In Connection Processing: %s", e, exc_info=True)
+    is_handled = not self.crash_fatal
+    return is_handled
 
   def connect(self):
     raise NotImplementedError()
