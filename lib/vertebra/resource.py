@@ -1,0 +1,2 @@
+class resource(object):
+  pass
