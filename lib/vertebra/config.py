@@ -30,7 +30,7 @@ this API to offer to actors using your implementation.
 import yaml
 from os.path import expanduser
 from types import DictionaryType
-from logging import debug,warning
+from logging import info,debug,warning
 import re
 from copy import deepcopy
 
@@ -40,14 +40,25 @@ DEFAULT_CONFIG = {
   'agent.exit':       'idle',
 }
 
+def delim(D):
+  def process(X):
+    return X.split(D)
+  return process
+
+def shadow(X,Y):
+  return Y
+
+def combine(X,Y):
+  return X + Y
+
 ARGMAP = {
-  'a': ('agent.actors',1,' '.split),
-  'c': ('agent.configfile',1,str),
-  'U': ('conn.xmpp.jid',1,str),
-  'P': ('conn.xmpp.passwd',1,str),
-  'H': ('conn.xmpp.server',1,str),
-  'X': ('magic',3,lambda *X: tuple(map(int,X))),
-  'Z': ('toggletest',0,bool),
+  'a': ('agent.actors',     1, delim(' '), combine),
+  'c': ('agent.configfile', 1, str,        shadow),
+  'U': ('conn.xmpp.jid',    1, str,        shadow),
+  'P': ('conn.xmpp.passwd', 1, str,        shadow),
+  'H': ('conn.xmpp.server', 1, str,        shadow),
+  'X': ('magic',            3, lambda *X: tuple(map(int,X)), shadow),
+  'Z': ('toggletest',       0, bool,       shadow),
 }
 
 ARG_RE = re.compile('^-([' + ''.join(ARGMAP) + '])$')
@@ -58,6 +69,7 @@ class config(object):
     self.default_config = DEFAULT_CONFIG
     self.config = None
     self.loaded = False
+    self.reducers = dict([ (k,v) for (k,x,y,v) in ARGMAP.values() ])
 
   def process_args(self,args):
     # FIXME: Use getopt or something
@@ -75,7 +87,7 @@ class config(object):
         match = ARG_RE.match(tok)
         if match: # Matched an Arg Code
           (arg_code,) = match.groups() # Extract Code
-          (cur_arg,arg_count,arg_cvt) = ARGMAP[arg_code] # Find Arg Info
+          (cur_arg,arg_count,arg_cvt,arg_mix) = ARGMAP[arg_code] # Arg Info
           if arg_count == 0: # No Count Means Toggle Arg, Flip Default
             config[cur_arg] = not self.default_config.get(cur_arg,False)
             cur_arg = None # No Parameters
@@ -86,7 +98,12 @@ class config(object):
         arg_stack.append(tok) # Next Parameter for Stack
         if len(arg_stack) == arg_count: # Have All Parameters
           try: # Attempt Conversion
-            config[cur_arg] = arg_cvt(*arg_stack)
+            prev = config.get(cur_arg,None)
+            val = arg_cvt(*arg_stack)
+            if prev is not None:
+              config[cur_arg] = arg_mix(prev,val)
+            else:
+              config[cur_arg] = val
             debug("cli config: %s=%r",cur_arg,config[cur_arg])
           except Exception:
             warning("invalid argument: %s (-%s), %r",cur_arg,arg_code,
@@ -102,6 +119,7 @@ class config(object):
     self.process_args(args)
     self.file_config = {}
 
+    print repr(self.cli_config)
     if config_file:
       pass
     elif 'agent.configfile' in self.cli_config:
@@ -113,6 +131,7 @@ class config(object):
       return
 
     try:
+      info("loaded config from %s" % config_file)
       file_settings = yaml.load(open(expanduser(config_file),'r'))
       assert type(file_settings) is DictionaryType
       self.file_config = file_settings
@@ -136,13 +155,16 @@ class config(object):
   def bootstrap_get(self,idx):
     if not self.loaded:
       raise Exception("Config Not Loaded") # TODO: Make Custom Exception
+    vals = []
     for settings in [
-                      self.cli_config,
-                      self.file_config,
                       self.default_config,
+                      self.file_config,
+                      self.cli_config,
                     ]:
       if idx in settings:
-        return settings[idx]
+        vals.append(settings[idx])
+    if vals:    
+      return reduce(self.reducers.get(idx,shadow),vals)
     raise KeyError('Value Not Found')
 
   def __contains__(self,idx):
@@ -152,4 +174,3 @@ class config(object):
 
   def __getitem__(self,idx):
     return self.bootstrap_get(idx)
-

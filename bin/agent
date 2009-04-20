@@ -3,6 +3,7 @@
 from sys import path,argv
 path.append('./lib/') # FIXME: Install Wherever
 
+import sys
 import logging
 import vertebra.config as config
 import vertebra.conn.xmpp as xmpp
@@ -17,7 +18,7 @@ logging.basicConfig(level=level,
                     format='%(asctime)s %(levelname)s %(message)s')
 
 Config = config.config()
-Config.load()
+Config.load(args = sys.argv)
 
 Conn = xmpp.xmppConnection()
 Agent = agent.agent()
