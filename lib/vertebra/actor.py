@@ -13,7 +13,7 @@ class actor(object):
   def load(self,agent):
     """actor loading initialization"""
     pass
-  
+
   def collect_ops(self):
     for val in [ getattr(self,key) for key in dir(self) ]:
       if ininstance(val,operation):
