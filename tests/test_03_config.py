@@ -169,3 +169,12 @@ class test_0_config:
     cfg = self.make_config('sample0')
     cfg['i am not here']
 
+  def test_17_argcombine(self):
+    """config: certain arguments should combine"""
+    cfg = self.make_config('sample0','-a','qux')
+    assert cfg['agent.actors'] == ['foo','bar','baz','qux']
+
+  def test_18_argsplit(self):
+    """config: certain arguments should split"""
+    cfg = self.make_config('sample0','-a','qux fizz','-a','bang')
+    assert cfg['agent.actors'] == ['foo','bar','baz','qux','fizz','bang']
