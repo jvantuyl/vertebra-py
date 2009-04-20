@@ -1,4 +1,4 @@
-from vertebra.actor import actor,bind_op,init_call,no_auth,once
+from vertebra.actor import actor,bind_op,init_call,once
 from vertebra.scope import single
 from vertebra.request import request as req,merge
 from vertebra.resource import resource as r
@@ -21,9 +21,8 @@ class counter_getter(actor):
   def load(self,agent):
     self.agent = agent
 
-  @no_auth
   @init_call("/counter/test",{},once)
-  @bind_op("/counter/test",security=no_auth)
+  @bind_op("/counter/test")
   def test(self,request):
     counters = merge(
       single.req("/counter/get_id",counter="foo"),
