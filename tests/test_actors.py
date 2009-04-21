@@ -4,6 +4,9 @@ from vertebra.request import request as req,merge
 from vertebra.resource import resource as r
 from threading import Lock
 
+def load(agent):
+  pass
+
 class counter_server(actor):
   def load(self,agent):
     self.last_id_map = {}
