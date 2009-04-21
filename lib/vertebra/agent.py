@@ -8,9 +8,13 @@ import fibra
 import fibra.handlers.sleep
 import time
 from sys import argv,exit
+from imp import find_module,load_module
 
 # HACK HACK HACK
 fibra.handlers.sleep.time_func = time.time
+
+ACTORBASEPREFIX = 'vertebra.actors.'
+import vertebra.actors as ACTORBASEMOD
 
 class base_agent(object):
   """Base Implementation and Interface for Vertebra Agent"""
@@ -25,8 +29,18 @@ class base_agent(object):
     if isinstance(actor,ModuleType):
       actor.load(self) # Ask the actor module to load itself into this agent
     elif isinstance(actor,StringTypes):
-      mod = __import__(name='vertebra.actors.' + actor,fromlist=['load'])
+      try:
+        modinfo = find_module(actor,self.config['agent.path'])
+      except ImportError:
+        modinfo = None
+      if modinfo is not None:
+        modname = ACTORBASEPREFIX + actor
+        mod = load_module(modname,*modinfo)
+        setattr(ACTORBASEMOD,actor,mod)
+      else:
+        mod = __import__(name=ACTORBASEPREFIX + actor,fromlist=['load'])
       debug('Imported %s as %r',actor,mod)
+      info("loaded actor %s" % actor)
       self.load_actor(mod)
     else:
       raise NotImplementedError

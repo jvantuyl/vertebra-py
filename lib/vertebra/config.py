@@ -52,6 +52,7 @@ def combine(X,Y):
   return X + Y
 
 ARGMAP = {
+  'A': ('agent.path',       1, delim(' '), combine),
   'a': ('agent.actors',     1, delim(' '), combine),
   'c': ('agent.configfile', 1, str,        shadow),
   'U': ('conn.xmpp.jid',    1, str,        shadow),
