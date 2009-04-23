@@ -28,14 +28,16 @@ this API to offer to actors using your implementation.
 """
 
 import yaml
-from os.path import expanduser
+from os.path import expanduser,join,exists,sep
 from types import DictionaryType
-from logging import info,debug,warning
+from logging import error,fatal,info,debug,warning
 import re
 from copy import deepcopy
+from sys import exit
 
 DEFAULT_CONFIG = {
-  'agent.configfile': '~/.vertebra/agent.yml',
+  'agent.path': [],
+  'agent.config_dir': ["~/.vertebra/",'.'],
   'agent.actors':     [],
   'agent.exit':       'idle',
 }
@@ -51,16 +53,20 @@ def shadow(X,Y):
 def combine(X,Y):
   return X + Y
 
+# Arg, Number of SubArgs, Arg Processor, Composition
 ARGMAP = {
-  'A': ('agent.path',       1, delim(' '), combine),
-  'a': ('agent.actors',     1, delim(' '), combine),
-  'c': ('agent.configfile', 1, str,        shadow),
-  'U': ('conn.xmpp.jid',    1, str,        shadow),
-  'P': ('conn.xmpp.passwd', 1, str,        shadow),
-  'H': ('conn.xmpp.server', 1, str,        shadow),
-  'X': ('magic',            3, lambda *X: tuple(map(int,X)), shadow),
-  'Z': ('toggletest',       0, bool,       shadow),
+  'A': ('agent.path',           1, delim(' '), combine),
+  'a': ('agent.actors',         1, delim(' '), combine),
+  'C': ('agent.config_dir',     1, delim(' '), combine),
+  'c': ('agent.config_file',    1, str,        shadow),
+  'p': ('agent.profile',        1, str,        shadow),
+  'U': ('conn.xmpp.jid',        1, str,        shadow),
+  'P': ('conn.xmpp.passwd',     1, str,        shadow),
+  'H': ('conn.xmpp.server',     1, str,        shadow),
+  'X': ('magic',                3, lambda *X: tuple(map(int,X)), shadow),
+  'Z': ('toggletest',           0, bool,       shadow),
 }
+ARGMIX = dict( [ (agent,comb) for (agent,x,y,comb) in ARGMAP.values() ] )
 
 ARG_RE = re.compile('^-([' + ''.join(ARGMAP) + '])$')
 
@@ -74,8 +80,6 @@ class config(object):
 
   def process_args(self,args):
     # FIXME: Use getopt or something
-    config_default = {}
-
     config = {}
     cur_arg = None
     arg_code = None
@@ -114,35 +118,74 @@ class config(object):
       warning("incomplete argument: %s (-%s), %r",cur_arg,arg_code,arg_stack)
     self.cli_config = config
 
-  def load(self,config_file=None,args=[]):
-    self.config = {}
-    self.default_config = deepcopy(DEFAULT_CONFIG)
+  def arg_combine(self,*args):
+    s = {}
+    for x in args:
+      for k,v in x.iteritems():
+        try:
+          comb = ARGMIX[k]
+        except KeyError:
+          comb = shadow
+        if k in s:
+          s[k] = comb(s[k],v)
+        else:
+          s[k] = v
+    return s
+    
+  def which_config_file(self,settings):
+    if 'agent.config_file' in settings:
+      filename = settings['agent.config_file']
+      if sep in filename:
+        return filename
+    else:
+      profile = settings['agent.profile'] # from args
+      filename = profile + '.yml'
+    config_dir = settings['agent.config_dir'] # default or from args
+
+    for d in reversed(config_dir):
+      path = expanduser(join(d,filename))
+      if exists(path):
+        return path
+
+    return None
+
+  def load(self,defaults=None,config_file=None,args=[]):
+    if defaults is None:
+      self.default_config = deepcopy(DEFAULT_CONFIG)
+    else:
+      self.default_config = defaults
+
     self.process_args(args)
     self.file_config = {}
 
-    print repr(self.cli_config)
     if config_file:
       pass
-    elif 'agent.configfile' in self.cli_config:
-      config_file = self.cli_config['agent.configfile']
-    elif 'agent.configfile' in self.default_config:
-      config_file = self.default_config['agent.configfile']
     else:
-      warning("No Config File (Not Even A Default?)")
-      return
-
+      tentative_settings = self.arg_combine(
+        self.default_config,
+        self.cli_config
+      )
+      config_file = self.which_config_file(tentative_settings)
+      if config_file is None:
+        warning("No Config File Exists")
+        self.loaded = True
+        return
+    
     try:
       info("loaded config from %s" % config_file)
-      file_settings = yaml.load(open(expanduser(config_file),'r'))
+      file_settings = yaml.load(open(config_file,'r'))
       assert type(file_settings) is DictionaryType
       self.file_config = file_settings
     except AssertionError:
-      warning("Config File Format Not Recognized: %s", config_file)
+      fatal("Config File Format Not Recognized: %s", config_file)
+      exit(1)
     except IOError:
-      warning("Unable to Open Config File: %s", config_file)
+      fatal("Unable to Open Config File: %s", config_file)
+      exit(1)
     except Exception,e:
-      warning("Unexpected Loading Configuration: %s, %r",config_file,e,
+      fatal("Unexpected Loading Configuration: %s, %r",config_file,e,
               exc_info=True)
+      exit(1)
 
     self.loaded = True
 
@@ -153,8 +196,8 @@ class config(object):
     s.update(self.default_config)
     return s
 
-  def bootstrap_get(self,idx):
-    if not self.loaded:
+  def bootstrap_get(self,idx,early=False):
+    if not early and not self.loaded:
       raise Exception("Config Not Loaded") # TODO: Make Custom Exception
     vals = []
     for settings in [

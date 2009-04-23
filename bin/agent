@@ -3,7 +3,9 @@
 from sys import path,argv
 path.append('./lib/') # FIXME: Install Wherever
 
+from copy import deepcopy
 import sys
+from os.path import basename
 import logging
 import vertebra.config as config
 import vertebra.conn.xmpp as xmpp
@@ -17,8 +19,10 @@ if '-d' in argv:
 logging.basicConfig(level=level,
                     format='%(asctime)s %(levelname)s %(message)s')
 
+defs = deepcopy(config.DEFAULT_CONFIG)
+defs['agent.profile'] = basename(sys.argv[0])
 Config = config.config()
-Config.load(args = sys.argv[1:])
+Config.load(defaults=defs,args = sys.argv[1:])
 
 Conn = xmpp.xmppConnection()
 Agent = agent.agent()
