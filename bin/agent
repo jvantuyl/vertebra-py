@@ -18,7 +18,7 @@ logging.basicConfig(level=level,
                     format='%(asctime)s %(levelname)s %(message)s')
 
 Config = config.config()
-Config.load(args = sys.argv)
+Config.load(args = sys.argv[1:])
 
 Conn = xmpp.xmppConnection()
 Agent = agent.agent()
