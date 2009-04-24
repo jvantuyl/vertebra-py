@@ -20,11 +20,11 @@ class counter_server(actor):
       self.last_id_map[wanted] = last + 1
     yield { counter: wanted, id: last }
 
+@init_call("/counter/test",{},once)
 class counter_getter(actor):
   def load(self,agent):
     self.agent = agent
 
-  @init_call("/counter/test",{},once)
   @bind_op("/counter/test")
   def test(self,request):
     counters = merge(

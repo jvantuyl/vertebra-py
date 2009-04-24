@@ -7,4 +7,6 @@ def load(agent):
   info("core actor loaded")
 
 class herault(actor):
-  pass
+  def load(self,agent):
+    super(advertiser,self).load(agent)
+    self.advertisements = []

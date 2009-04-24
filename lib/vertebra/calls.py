@@ -26,7 +26,7 @@ class outcall_net(outcall):
 class initcall(incall):
   pass
 
-def register_initcall(op,actual_op,args,scope):
+def register_initcall(op,args,scope):
   info("initcall registered %r",op)
 
 # These should probably become classes

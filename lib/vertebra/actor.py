@@ -42,9 +42,9 @@ def bind_res(**kwargs):
   return update_op
 
 # Registers An Operation As An InitCall
-def init_call(actual_op,args = {},scope = once_then_exit):
-  def register(op):
-    register_initcall(op,actual_op,args,scope)
-    return op
-  return register
+def init_call(op,args = {},scope = once_then_exit):
+  register_initcall(op,args,scope)
+  def passthru(actor_cls):
+    return actor_cls
+  return passthru
 
