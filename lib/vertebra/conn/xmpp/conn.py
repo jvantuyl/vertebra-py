@@ -59,8 +59,12 @@ class xmppConnection(baseConnection):
           self.process()
           if time() - tick >= SUCCESS_TIME:
             self.resetBackoff()
+      except (socket_error,pyxmpp.all.FatalStreamError), e:
+        error("Error in XMPP processing: %s",e,exc_info=True)
+        # TODO: Should we catch getting booted off to better handle when two
+        # agents are knocking each other off?
       except Exception, e:
-        info("Unhandled Error In XMPP Processing: %s", e, exc_info=True)
+        error("Unhandled Error In XMPP Processing: %s", e, exc_info=True)
         raise # TODO: Is this right?
 
       if not self.keep_running: # This check prevents spurious backoff logs
