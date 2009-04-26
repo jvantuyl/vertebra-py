@@ -1,5 +1,7 @@
 import re
 
+SCOPES = ['direct','all','any','single']
+
 class request:
   def __init__(self,name):
     self._name = name
