@@ -1,7 +1,7 @@
 from vertebra.actor import actor,bind_op,init_call,once
 from vertebra.scope import single
 from vertebra.request import request as req,merge
-from vertebra.resource import resource as r
+from vertebra.resource import res as r
 from threading import Lock
 
 def load(agent):
