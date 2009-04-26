@@ -35,17 +35,7 @@ class baseConnection(object):
     self.thread.join(*args,**kwargs)
 
   def run(self):
-    while self.keep_running:
-      try:
-        self.connect()
-        self.process()
-      except Exception, e:
-        if not self.handle_crash(e):
-          break
-        for i in range(30): # Delay 3 seconds, but check for exit
-          sleep(0.1)
-          if not self.keep_running:
-            break
+    raise NotImplementedError()
 
   def handle_crash(self,e): # Returns True if crash is handled
     error("Unhandled Error In Connection Processing: %s", e, exc_info=True)
