@@ -28,6 +28,7 @@ this API to offer to actors using your implementation.
 """
 
 import yaml
+import yaml.parser
 from os.path import expanduser,join,exists,sep
 from types import DictionaryType
 from logging import error,fatal,info,debug,warning
@@ -137,9 +138,11 @@ class config(object):
       filename = settings['agent.config_file']
       if sep in filename:
         return filename
-    else:
+    elif 'agent.profile' in settings:
       profile = settings['agent.profile'] # from args
       filename = profile + '.yml'
+    else:
+      filename = 'agent.yml'
     config_dir = settings['agent.config_dir'] # default or from args
 
     for d in reversed(config_dir):
@@ -158,34 +161,40 @@ class config(object):
     self.process_args(args)
     self.file_config = {}
 
-    if config_file:
-      pass
-    else:
-      tentative_settings = self.arg_combine(
-        self.default_config,
-        self.cli_config
-      )
-      config_file = self.which_config_file(tentative_settings)
-      if config_file is None:
-        warning("No Config File Exists")
-        self.loaded = True
-        return
+    # Use Passed In File With Asolute Preference
+    if config_file is None:
+      if 'agent.config_file' in self.file_config:
+        config_file = self.file_config['agent.config_file']
+      else:
+        # Try to find one from defaults + args
+        tentative_settings = self.arg_combine(
+          self.default_config,
+          self.cli_config
+        )
+        config_file = self.which_config_file(tentative_settings)
+
+    # What we got?
+    self.used_config = config_file
+
+    # I got nothing...
+    if config_file is None:
+      warning("No Config File Exists")
+      self.loaded = True
+      return
     
     try:
-      info("loaded config from %s" % config_file)
+      info("loaded config from %s" % (config_file,))
       file_settings = yaml.load(open(config_file,'r'))
       assert type(file_settings) is DictionaryType
       self.file_config = file_settings
-    except AssertionError:
+    except (yaml.parser.ParserError,AssertionError,):
       fatal("Config File Format Not Recognized: %s", config_file)
-      exit(1)
     except IOError:
       fatal("Unable to Open Config File: %s", config_file)
-      exit(1)
     except Exception,e:
       fatal("Unexpected Loading Configuration: %s, %r",config_file,e,
               exc_info=True)
-      exit(1)
+      raise # TODO: Custom Error
 
     self.loaded = True
 
@@ -210,6 +219,9 @@ class config(object):
     if vals:    
       return reduce(self.reducers.get(idx,shadow),vals)
     raise KeyError('Value Not Found')
+
+  def dump(self):
+    return (self.default_config, self.file_config, self.cli_config)
 
   def __contains__(self,idx):
     return idx in self.cli_config or \
