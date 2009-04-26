@@ -98,8 +98,8 @@ class agent(base_agent):
     from time import sleep
     ready = True
     while 1: # FIXME: Exit based on agent.idle
-      yield 0.0
-      sleep(0.05) # For now, punt by just sleeping a bit
+      yield 0.00
+      sleep(0.03) # For now, punt by just sleeping a bit
 
   def recv(self): # Receive Threadlet
     info("recv: handler started")
