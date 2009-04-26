@@ -9,7 +9,7 @@ the ability to wake the client up to send outgoing data on our behalf.
 import threading
 import pyxmpp.all
 from logging import debug,info,error
-from time import sleep
+from time import time
 from socket import error as socket_error
 from random import random
 from os import fdopen,pipe
@@ -20,6 +20,7 @@ except ImportError:
 
 CS = pyxmpp.all.ClientStream
 
+# Same as normal ClientStream, but we can wake it up for quick cleanup
 class vxClientStream(CS):
   def __init__(self,*args,**kwargs):
     CS.__init__(self,*args,**kwargs)
@@ -34,12 +35,6 @@ class vxClientStream(CS):
   def woke(self):
     # Clear Byte That Woke Us Up
     self.wake_recv.read(1)
-    try:
-      while 1:
-        stanza = self.outstanding.get(False)
-        self.send(stanza)
-    except Empty:
-      pass
     
   def _loop_iter(self,timeout):
     """Same as `Stream.loop_iter` but assume `self.lock` is acquired."""
@@ -73,21 +68,27 @@ class vxClient(pyxmpp.all.Client):
     pyxmpp.all.Client.__init__(self,*args,**kwargs) #Client is old-style class
     self.stream_class = vxClientStream # Use Our Modified Stream Class
 
-  def loop(self,conn,timeout=1):
+  def loop(self,conn,timeout):
     while conn.keep_running:
       debug("loop")
+
       stream=self.get_stream()
-      if not stream:
+
+      if stream is None:
         break
+
       act=stream.loop_iter(timeout)
+
       if not act:
         self.idle()
 
   def wake(self):
-    if self.stream:
-      self.stream.wake()
+    stream = self.stream
+    if stream is not None:
+      stream.wake()
       
   def send(self,iq):
-    if self.stream:
-      self.stream.outstanding.put(iq)
-      self.stream.wake()
+    steram = self.stream
+    if stream is not None:
+      stream.outstanding.put(iq)
+      stream.wake()

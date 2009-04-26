@@ -12,7 +12,7 @@ will be called in its thread, and it has a thread-safe "transmit" method.
 import threading
 import pyxmpp.all
 from logging import debug,info,error
-from time import sleep
+from time import time,sleep
 from socket import error as socket_error
 from os import fdopen,pipe
 from vertebra.conn.backoff import exponential_backoff
@@ -20,6 +20,7 @@ from vertebra.conn.xmpp.client import vxClient
 from vertebra.conn.base import baseConnection
 
 IDLE_INTERVAL=0.25
+SUCCESS_TIME=5.0 # seconds of connectivity sufficient to reset backoff
 
 class xmppConnection(baseConnection):
   def setup(self,config,deliver):
@@ -46,13 +47,26 @@ class xmppConnection(baseConnection):
     self.backoff = exponential_backoff(0.4,30.0,2.0)
 
   def run(self):
+    delay = 0.0
     while self.keep_running:
+      sleep(delay)
+
       try:
-        self.connect()
-        self.process()
+        info("xmpp connecting")
+        if self.connect():
+          info("xmpp connected")
+          tick = time()
+          self.process()
+          if time() - tick >= SUCCESS_TIME:
+            self.resetBackoff()
       except Exception, e:
         info("Unhandled Error In XMPP Processing: %s", e, exc_info=True)
-        sleep(5.0)
+        raise # TODO: Is this right?
+
+      if not self.keep_running: # This check prevents spurious backoff logs
+        break
+
+      delay = self.backoff.next()
 
   def connect(self):
     # Assume we're not connected
@@ -61,10 +75,16 @@ class xmppConnection(baseConnection):
     if self.server:
       kw['server'] = self.server
 
-    client = vxClient(jid=self.jid,password=self.password,**kw)
-    client.connect()
+    client = vxClient(jid=self.jid,password=self.password,keepalive=15,**kw)
+    try:
+      client.connect()
+    except socket_error:
+      debug("Socket Error Establishing Connection")
+      return False
     debug("Connection Established")
     self.client = client
+
+    return True
 
   def send(self,msg):
     # FIXME: Marshalling anyone?
@@ -81,8 +101,7 @@ class xmppConnection(baseConnection):
 
   def process(self):
     debug("start processing")
-    while self.keep_running:
-      self.client.loop(self,timeout=1)
+    self.client.loop(conn=self,timeout=1)
     debug("done processing")
 
 if __name__ == '__main__':
