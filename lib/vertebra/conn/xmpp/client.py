@@ -68,6 +68,17 @@ class vxClient(pyxmpp.all.Client):
     pyxmpp.all.Client.__init__(self,*args,**kwargs) #Client is old-style class
     self.stream_class = vxClientStream # Use Our Modified Stream Class
 
+  def stream_error(self,err):
+    cond = err.get_condition()
+    if cond.name == "conflict":
+      error("booted by another agent")
+      # TODO: Use this to handle conflicting agents
+      #       Maybe check last agent registration with Herault, whichever
+      #       agent is older exits?  Or should we just assume conflicts mean
+      #       we should back off?
+    else:
+      pyxmpp.all.Client(self,err)
+    
   def loop(self,conn,timeout):
     while conn.keep_running:
       debug("loop")
