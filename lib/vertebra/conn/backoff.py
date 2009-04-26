@@ -14,7 +14,7 @@ def exponential_backoff(wait_0,wait_max,rate,randomize=True):
       backoff = random() * backoff_max
     else:
       backoff = backoff_max
-    debug("backing off: actual=%s, max=%s",(backoff,backoff_max))
+    debug("backing off: actual=%s, max=%s",backoff,backoff_max)
     yield backoff
     current_try += 1
 
