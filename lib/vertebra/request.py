@@ -1,3 +1,4 @@
+from vertebra.resource import res
 import re
 
 SCOPES = ['direct','all','any','single']
