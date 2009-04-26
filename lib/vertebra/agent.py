@@ -82,8 +82,9 @@ class agent(base_agent):
     for actor in ['actor_core'] + self.config['agent.actors']:
       try:
         self.load_actor(actor)
-      except :
+      except:
         warn("unable to load %s",actor,exc_info=True)
+    info("done loading actors")
 
     # Start Connection
     self.conn.start()
