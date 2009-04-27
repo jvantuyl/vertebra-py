@@ -7,6 +7,7 @@ for writing marshallers that speak that protocol, and a registry for tracking
 and invoking those marshallers.
 """
 
+from logging import warn
 from vertebra.util.symbol import sym
 
 __all__ = ['NOT_MINE','MarshallError','Marshaller','Registry','takes_types','takes_keys']
@@ -100,7 +101,11 @@ class Registry(list):
   def marshall(self,obj):
     """convert a realized object into a serialized form of itself"""
     for marshaller in self:
-      encoded = marshaller.marshall(obj,self.marshall)
+      try:
+        encoded = marshaller.marshall(obj,self.marshall)
+      except Exception:
+        warn("%s crashed marshalling %s",marshaller,obj)
+        encoded = NOT_MINE
       if encoded is NOT_MINE:
         continue
       return encoded
@@ -113,7 +118,11 @@ class Registry(list):
        The meaning of "key" is specific to an encoding
     """
     for marshaller in self:
-      decoded = marshaller.unmarshall(key,obj,self.unmarshall)
+      try:
+        decoded = marshaller.unmarshall(key,obj,self.unmarshall)
+      except Exception:
+        warn("%s crashed unmarshalling %s",marshaller,obj)
+        decoded = NOT_MINE
       if decoded is NOT_MINE:
         continue
       return decoded

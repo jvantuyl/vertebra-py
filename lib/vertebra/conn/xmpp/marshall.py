@@ -29,7 +29,7 @@ from types import IntType,LongType,FloatType,StringTypes,DictType,ListType
 from pyxmpp.objects import StanzaPayloadObject
 
 # Namespace for Vertebra Elements
-VERTEBRA_NS = 'http://xmlschema.engineyard.com/agent/api'
+VERTEBRA_NS = 'http://xmlschema.engineyard.com/agent/0.5'
 
 # Helper Generator that Iterates Children of a libxml2 XmlNode
 def children(node):

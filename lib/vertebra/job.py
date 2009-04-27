@@ -19,7 +19,7 @@ class job(object):
   def __repr__(self):
     return '<job "%s">' % self.token
 
-class runner(object):
+class evented_runner(object): #TODO: Remove Threading, Adapt to Calls
   def setup(self,func,kwargs,notify = None):
     self.func = func
     self.kwargs = kwargs

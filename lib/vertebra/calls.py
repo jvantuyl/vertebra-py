@@ -2,28 +2,32 @@ from vertebra.util.symbol import sym
 from logging import info
 
 class incall(object):
-  pass
+  def setup(self,frm,request):
+    pass
 
-class incall_local(incall):
-  pass
-
-class incall_net(incall):
-  pass
-
-class incall_initcall(incall):
-  pass
+  def dispatch(self,request):
+    pass
 
 class outcall(object):
+  def setup(self,to,request):
+    pass
+
+class invocation(object):
   pass
 
-class outcall_local(outcall):
+class invo_local(invocation):
   pass
 
-class outcall_net(outcall):
+class invo_net(invocation):
   pass
 
-# Init Calls
-class initcall(incall):
+class evocation(object):
+  pass
+
+class evo_local(evocation):
+  pass
+
+class evo_net(evocation):
   pass
 
 def register_initcall(op,args,scope):

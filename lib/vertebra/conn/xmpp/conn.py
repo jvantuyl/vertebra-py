@@ -11,20 +11,50 @@ will be called in its thread, and it has a thread-safe "transmit" method.
 
 import threading
 import pyxmpp.all
+from pyxmpp.interface import implements
+from pyxmpp.interfaces import IStanzaHandlersProvider,IFeaturesProvider
 from logging import debug,info,error
 from time import time,sleep
 from socket import error as socket_error
 from os import fdopen,pipe
+from vertebra.conn import router
+from vertebra.conn.base import threadedConnection
 from vertebra.conn.backoff import exponential_backoff
+from vertebra.conn.local import localConnection
 from vertebra.conn.xmpp.client import vxClient
-from vertebra.conn.base import baseConnection
+from vertebra.conn.xmpp.marshall import registry as codec
+from vertebra.util.symbol import symbol
 
+VERTEBRA_NS = ('vertebra','http://xmlschema.engineyard.com/agent/0.5')
 IDLE_INTERVAL=0.25
 SUCCESS_TIME=5.0 # seconds of connectivity sufficient to reset backoff
 
-class xmppConnection(baseConnection):
-  def setup(self,config,deliver):
-    super(xmppConnection,self).setup(config,deliver)
+class xmppConnection(threadedConnection):
+  implements(IStanzaHandlersProvider,IFeaturesProvider)
+
+  codec = codec
+
+  def get_iq_get_handlers(self):
+    return [VERTEBRA_NS + (self.recv,)]
+
+  def get_iq_set_handlers(self):
+    return [VERTEBRA_NS + (self.recv,)]
+
+  def get_message_handlers(self):
+    return []
+
+  def get_presence_handlers(self):
+    return []
+
+  def get_features(self):
+    return []
+
+  class identity(symbol):
+    def __str__(self):
+      return self._symname
+
+  def setup(self,config):
+    super(xmppConnection,self).setup(config)
 
     self.jid = pyxmpp.all.JID(config['conn.xmpp.jid'])
     try:
@@ -37,6 +67,9 @@ class xmppConnection(baseConnection):
 
     self.client = None
     self.resetBackoff()
+
+  def localIdentities(self):
+    return [self.identity(self.jid)]
 
   def wake(self):
     debug("waking up connection")
@@ -80,6 +113,8 @@ class xmppConnection(baseConnection):
       kw['server'] = self.server
 
     client = vxClient(jid=self.jid,password=self.password,keepalive=15,**kw)
+    client.interface_providers.append(self)
+
     try:
       client.connect()
     except socket_error:
@@ -90,44 +125,10 @@ class xmppConnection(baseConnection):
 
     return True
 
-  def send(self,msg):
-    # FIXME: Marshalling anyone?
-    if self.client:
-      self.client.send(msg)
-      
-  def disconnected(self):
-    # FIXME: What do we have to clean up here?  Anything?
-    pass
-
-  def reconnected(self):
-    # FIXME: What do we have to do here?  Should we retransmit outstanding?
-    pass
-
   def process(self):
     debug("start processing")
     self.client.loop(conn=self,timeout=1)
     debug("done processing")
 
-if __name__ == '__main__':
-  from getpass import getpass
-  import logging
-
-  def printer(it):
-    print repr(it)
-
-  jid = raw_input("Jabber ID: ")
-  pwd = getpass("Password: ")
-  svr = raw_input("Server (or enter to use default): ")
-  jid = jid.strip()
-  if not svr.strip():
-    svr = svr.strip()
-
-  logging.basicConfig(level=logging.DEBUG)
-
-  conn = xmppConnection(jid=jid,password=pwd,server=svr,deliver=printer)
-  conn.start()
-
-  while 1: # This allows a KeyboardInterrupt to be processed even though we're in a thread
-    conn.wake()
-    conn.join(5.0)
-
+  def __repr__(self):
+    return u'<xmpp %s>' % self.jid.as_utf8()

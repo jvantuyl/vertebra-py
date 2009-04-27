@@ -19,7 +19,10 @@ import vertebra.actors as ACTORBASEMOD
 class base_agent(object):
   """Base Implementation and Interface for Vertebra Agent"""
   # Interface
-  def setup(self,config,connection): raise NotImplementedError
+  def setup(self,config,router):
+    self.config = config
+    self.router = router
+
   def start(self): raise NotImplementedError
   def stop(self): raise NotImplementedError
 
@@ -45,6 +48,9 @@ class base_agent(object):
     else:
       raise NotImplementedError
 
+  def recv(self,msg):
+    warn("can't handle message: %r" % msg)
+
 class agent(base_agent):
   """Vertebra Agent Implementation"""
   def __init__(self):
@@ -57,10 +63,9 @@ class agent(base_agent):
     self.actors = []
     self.setupped = False
 
-  def setup(self,config,connection):
+  def setup(self,config,router):
+    super(agent,self).setup(config,router)
     self.thread.setDaemon(True)
-    self.config = config
-    self.conn = connection
     self.setupped = True
     debug("agent initialized")
 
@@ -74,7 +79,6 @@ class agent(base_agent):
     # Initialize Tasklets
     info("agent starting")
     sched.install(self.idle())
-    sched.install(self.recv())
     sched.install(self.xmit())
 
     # Load Actors
@@ -86,13 +90,17 @@ class agent(base_agent):
         warn("unable to load %s",actor,exc_info=True)
     info("done loading actors")
 
-    # Start Connection
-    self.conn.start()
+    # Start Communications
+    self.router.start()
 
     # Run
-    info("agent operational")
-    self.sched.run()
-    info("agent terminating")
+    try:
+      info("agent operational")
+      self.sched.run()
+      info("agent terminating")
+    finally:
+      # Shut Down Communications
+      self.router.stop()
 
   def idle(self): # Puts the agent to sleep when there's nothing to be done
     from time import sleep
@@ -101,18 +109,11 @@ class agent(base_agent):
       yield 0.00
       sleep(0.03) # For now, punt by just sleeping a bit
 
-  def recv(self): # Receive Threadlet
-    info("recv: handler started")
-    while 1:
-      yield 1.0
-      debug("recv: processing")
-
   def xmit(self): # Transmit Threadlet
     info("xmit: handler started")
     while 1:
       yield 1.0
       debug("xmit: processing")
-      self.conn.wake()
 
   def do_exit(self):
     yield exit(1)
