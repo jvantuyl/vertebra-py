@@ -8,6 +8,8 @@ import sys
 from os.path import basename
 import logging
 import vertebra.config as config
+import vertebra.conn.router as router
+import vertebra.conn.local as local
 import vertebra.conn.xmpp as xmpp
 import vertebra.agent as agent
 
@@ -24,14 +26,18 @@ defs['agent.profile'] = basename(sys.argv[0])
 Config = config.config()
 Config.load(defaults=defs,args = sys.argv[1:])
 
-Conn = xmpp.xmppConnection()
+LocalConn = local.localConnection()
+XmppConn = xmpp.xmppConnection()
 Agent = agent.agent()
+Router = router.router()
 
-def deliver(stuff):
-  print stuff
+LocalConn.setup(Config)
+XmppConn.setup(Config)
 
-Conn.setup(Config,deliver)
-Agent.setup(Config,Conn)
+Router.setup(Agent,LocalConn)
+Agent.setup(Config,Router)
+
+Router.register(XmppConn)
 
 Agent.start()
 
@@ -39,5 +45,5 @@ try:
   while 1: # This allows a KeyboardInterrupt to be raised in the main thread
     Agent.join(0.25)
 except:
+  print "stopped"
   Agent.stop()
-  Conn.stop()
