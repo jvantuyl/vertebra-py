@@ -5,7 +5,9 @@ __all__ = ['symbol','sym','factory']
 
 # Helper Classes
 class symbol(object):
-  """A class for creating named singletons for use as sentinel values."""
+  """A class for creating named classes of sentinel values."""
+  # FIXME: Make more efficient, use slots?
+
   def __new__(cls,name):
     if not hasattr(cls,'_pool'):
       cls._pool = WeakValueDictionary()
