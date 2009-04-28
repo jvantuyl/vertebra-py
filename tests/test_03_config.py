@@ -1,7 +1,8 @@
 from vertebra.config import config,DEFAULT_CONFIG
 from os import tempnam,unlink
 from warnings import catch_warnings
-from support import raises,suppress_logging
+from support import raises,suppress_logging,swapconfig
+from yaml.parser import ParserError
 
 # Test Data
 bad_data = "["
@@ -16,33 +17,19 @@ sample_data1 = """
 agent.actors: [qux]
 """
 
-# Helpful Decorator
-def swapconfigdefault(tempconfig):
-  """decorator to safely swap default config file around during function run"""
-  def decorate(f):
-    def func(*args,**kwargs):
-      oldfile = DEFAULT_CONFIG['agent.configfile']
-      if tempconfig:
-        DEFAULT_CONFIG['agent.configfile'] = tempconfig
-      else:
-        del DEFAULT_CONFIG['agent.configfile']
-      try:
-        return f(*args,**kwargs)
-      finally:
-        DEFAULT_CONFIG['agent.configfile'] = oldfile
-    func.func_name = f.func_name
-    func.func_doc = f.func_doc
-    return func
-  return decorate
-
 # Tests
 class test_0_config:
   def setup(self):
+    self.old_cfgdirs = DEFAULT_CONFIG['agent.config_dir']
+    DEFAULT_CONFIG['agent.config_dir'] = ['tests']
     self.tempfiles = {}
     self.create_temp('sample0',sample_data0)
     self.create_temp('sample1',sample_data1)
     self.create_temp('bad_sample',bad_data)
     # Monkey Patch Default File Out
+  
+  def teardown(self):
+    DEFAULT_CONFIG['agent.config_dir'] = self.old_cfgdirs
 
   def create_temp(self,name,data):
     with catch_warnings(record=True):
@@ -54,9 +41,9 @@ class test_0_config:
   def make_config(self,data,*args):
     cfg = config()
     if data:
-      cfg.load(self.tempfiles[data],args)
+      cfg.load(config_file=self.tempfiles[data],args=args)
     else:
-      cfg.load(None,args)
+      cfg.load()
     return cfg
 
   def teardown(self):
@@ -81,29 +68,31 @@ class test_0_config:
     assert cfg['conn.xmpp.passwd'] == 'supersekret'
 
   @suppress_logging()
-  @swapconfigdefault("/dev/null")
+  @swapconfig("/dev/null")
   def test_03_load_empty_config(self):
     """config: load empty config?"""
     cfg = self.make_config(None)
     # TODO: Test for Warning?
 
   @suppress_logging()
-  @swapconfigdefault("/dev/null")
+  @swapconfig("/dev/null")
   def test_04_load_empty_config_defaults(self):
     """config: load empty config, get defaults?"""
     cfg = self.make_config(None)
     assert 'conn.xmpp.passwd' not in cfg
 
   @suppress_logging()
-  @swapconfigdefault(None)
+  @swapconfig(None)
   def test_05_no_config_at_all(self):
     """config: no config at all?"""
     cfg = self.make_config(None)
 
+  @swapconfig("/dev/null")
   @suppress_logging()
   def test_06_missing_config_file(self):
     """config: nonexistant config file?"""
     cfg = self.make_config(None,'-c','nonexistant file')
+    print repr(cfg.dump())
     assert 'conn.xmpp.passwd' not in cfg
     # TODO: Test for Warning?
 
@@ -120,12 +109,13 @@ class test_0_config:
     # TODO: Test for Warning?
     
   @suppress_logging()
-  @swapconfigdefault(None)
+  @swapconfig(None)
   def test_09_cli_configfile(self):
     """config: get config file from command line?"""
     cfg = self.make_config(None,'-c','/dev/null')
-    used_config = cfg['agent.configfile']
-    assert used_config == '/dev/null'
+    print repr(cfg.dump())
+    used = cfg.used_config
+    assert used == '/dev/null'
 
   def test_10_config_keys(self):
     """config: key enumeration?"""
