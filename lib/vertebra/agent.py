@@ -112,7 +112,7 @@ class agent(base_agent):
   def xmit(self): # Transmit Threadlet
     info("xmit: handler started")
     while 1:
-      yield 1.0
+      yield 5.0
       debug("xmit: processing")
 
   def do_exit(self):

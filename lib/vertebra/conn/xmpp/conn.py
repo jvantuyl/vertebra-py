@@ -127,7 +127,7 @@ class xmppConnection(threadedConnection):
 
   def process(self):
     debug("start processing")
-    self.client.loop(conn=self,timeout=1)
+    self.client.loop(conn=self,timeout=10)
     debug("done processing")
 
   def __repr__(self):
