@@ -44,7 +44,7 @@ class xmppConnection(threadedConnection):
     return []
 
   def get_presence_handlers(self):
-    return []
+    return [('available',self.sink,)]
 
   def get_features(self):
     return []

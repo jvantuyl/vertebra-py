@@ -6,7 +6,7 @@ This is the base all of Vertebra connections.
 """
 
 from threading import Thread,currentThread
-from logging import debug,info,error
+from logging import debug,info,error,warn
 from time import sleep
 from socket import error as socket_error
 from backoff import exponential_backoff
@@ -72,6 +72,10 @@ class baseConnection(object):
       c = self.client
       if c is not None:
         c.send(m)
+
+  def sink(self,X):
+    warn('sinking unused data: %r',X)
+    return True
 
 class threadedConnection(baseConnection):
   def setup(self,config,name="ThreadedConnection"):
