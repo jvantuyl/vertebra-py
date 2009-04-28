@@ -1,7 +1,7 @@
+from __future__ import with_statement
 from threading import Lock
 from Queue import PriorityQueue
 from heapq import heappush, heappop
-from __future__ import with_statement
 
 class StablePrioQueue:
   def __init__(self, maxsize = 0):
