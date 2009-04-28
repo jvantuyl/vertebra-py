@@ -1,7 +1,7 @@
 from types import GeneratorType,DictType
 from threading import Thread
 from Queue import Queue,Empty
-from vertebra.util.symbol import sym
+from vertebra.util import sym
 from random import randint
 from vertebra.token import token
 

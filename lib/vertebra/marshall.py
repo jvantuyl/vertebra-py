@@ -8,7 +8,7 @@ and invoking those marshallers.
 """
 
 from logging import warn
-from vertebra.util.symbol import sym
+from vertebra.util import sym
 
 __all__ = ['NOT_MINE','MarshallError','Marshaller','Registry','takes_types','takes_keys']
 

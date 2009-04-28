@@ -23,7 +23,7 @@ from vertebra.conn.backoff import exponential_backoff
 from vertebra.conn.local import localConnection
 from vertebra.conn.xmpp.client import vxClient
 from vertebra.conn.xmpp.marshall import registry as codec
-from vertebra.util.symbol import symbol
+from vertebra.util import symbol
 
 VERTEBRA_NS = ('vertebra','http://xmlschema.engineyard.com/agent/0.5')
 IDLE_INTERVAL=0.25

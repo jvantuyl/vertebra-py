@@ -1,5 +1,5 @@
 from vertebra.util import *
-from vertebra.util.symbol import *
+from vertebra.util import sym,symfactory as factory,symbol
 from re import compile
 
 class test_00_hex_functions:

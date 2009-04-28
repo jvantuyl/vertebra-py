@@ -1,4 +1,4 @@
-from vertebra.util.symbol import symbol,factory
+from vertebra.util import symbol,symfactory as factory
 
 __all__ = ['msg','st','fsm']
 
@@ -8,7 +8,7 @@ class exit(message): pass
 class state(symbol): pass
 
 ent = factory(enter)
-ext = factor(exit)
+ext = factory(exit)
 st = factory(state)
 
 class fsm(object): # NOTE: Technically, this is a Transducer (Mealey Machine)

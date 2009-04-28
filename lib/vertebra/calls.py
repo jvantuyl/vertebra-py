@@ -1,4 +1,4 @@
-from vertebra.util.symbol import sym
+from vertebra.util import sym
 from logging import info
 
 class incall(object):

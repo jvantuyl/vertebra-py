@@ -1,4 +1,4 @@
-from vertebra.util.symbol import sym
+from vertebra.util import sym
 
 # TODO: Make these classes
 agent_default_security = sym.secure_default
