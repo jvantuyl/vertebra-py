@@ -18,8 +18,8 @@ class StablePrioQueue:
     self.join = pq.join
 
   def get(self,block=True,timeout=None):
-    item = self.pq.get(block,timeout)
-    return item[0],item[2]
+    (pr,ct,val,) = self.pq.get(block,timeout)
+    return val
 
   def put(self,key,val,block=True,timeout=None):
     with self.c_lock:
