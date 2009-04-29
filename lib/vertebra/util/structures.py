@@ -1,7 +1,9 @@
 from __future__ import with_statement
 from threading import Lock
-from Queue import PriorityQueue
+from Queue import PriorityQueue,Empty,Full
 from heapq import heappush, heappop
+
+__all__ = ['StablePrioQueue','Empty','Full']
 
 class StablePrioQueue:
   def __init__(self, maxsize = 0):
