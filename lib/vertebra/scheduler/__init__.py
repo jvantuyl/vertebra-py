@@ -43,7 +43,3 @@ the trigger.  It is prefectly safe to schedule more than one task one
 trigger.  If the trigger has already been fired, the task will just be set
 as active.
 """
-
-from select import select
-from vertebra.util import StablePrioQueue
-from weakref import ref,WeakKeyDictionary,WeakValueDictionary
