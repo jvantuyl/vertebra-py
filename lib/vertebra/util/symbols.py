@@ -27,7 +27,9 @@ The purpose of the classes is that they allow you to use the isinstance
 function to detect which group of atoms you are watching for.  This allows
 you to easily mix-and-match atoms with other, user-supplied values with
 no fear of getting them mixed up.  This even allows uses to use their own
-atom classes.
+atom classes.  To make this easier, simply calling the factory object with
+a potential atom will return True if the atom belongs to that type of
+factory.
 
 Conventions
 -----------
