@@ -65,8 +65,14 @@ class atomfactory(object):
     else:
       return self._what(name)
 
-  def __call__(self,thing):
-    return isinstance(thing,self._what)
+  def __call__(self,*args,**kwargs):
+    if len(args) == 1:
+      return isinstance(args[0],self._what)
+    elif 'thing' in kwargs:
+      return isinstance(kwargs['thing'],self._what)
+    elif not args and not kwargs:
+      return self._what
+    raise TypeError("Exected single argument 'thing' or no arguments")
 
   def __repr__(self):
     return '<atomfactory for %s instances>' % self._what.__name__
