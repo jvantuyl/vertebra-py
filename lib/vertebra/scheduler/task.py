@@ -4,8 +4,8 @@ class Task(object):
   def iterate(self,triggeredby):
     raise NotImplementedError()
   
-class TaskHandler(handler):
-  TYPES = ( task, )
+class TaskHandler(Handler):
+  TYPES = ( Task, )
   def handle(self,scheduler,task,newtask):
     scheduler.schedule(task)  # Schedule New Task
     scheduler.schedule(newtask) # Schedule Old Task Too
@@ -17,5 +17,6 @@ class IteratorTask(Task):
 
   def iterate(self,scheduler):
     try:
+      pass # TODO: Finish
     except StopIteration:
       return

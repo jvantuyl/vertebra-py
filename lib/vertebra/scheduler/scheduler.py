@@ -2,9 +2,9 @@ from select import select
 from vertebra.util import StablePrioQueue,Full
 from weakref import ref,WeakKeyDictionary,WeakValueDictionary
 from logging import warn,error
-from vertebra.scheduler.handler import handler,NoopHandler
-from vertebra.scheduler.task import TaskHandler,task
-from vertebra.scheduler.trigger import TriggerHandler,trigger
+from vertebra.scheduler.handler import Handler,NoopHandler
+from vertebra.scheduler.task import TaskHandler,Task
+from vertebra.scheduler.trigger import TriggerHandler,Trigger
 
 class BaseScheduler(object):
   DEFAULT_PRIO = 100
@@ -95,7 +95,7 @@ class BaseScheduler(object):
   def wake(self): # With No Idle Function, This Does Nothing
     pass
 
-class busy(base_scheduler):
+class BusyScheduler(BaseScheduler):
   def idle(self):
     if self.triggers:
       raise RuntimeError("Busy-Scheduler Went Idle With Work, Uh-Oh")

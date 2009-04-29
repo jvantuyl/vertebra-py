@@ -1,14 +1,16 @@
 from vertebra.util import atom
 from vertebra.scheduler.handler import Handler
 
-class sentinel(atom): pass
+__all__ = ['_scheduler_sentinel','Sentinels','DONE','BaseSentinelHandler']
 
-sent = sentinel.factory()
+class _scheduler_sentinel(atom): pass
 
-DONE = sent.DONE
+Sentinels = _scheduler_sentinel.factory()
+
+DONE = Sentinels.DONE
 
 class BaseSentinelHandler(Handler):
-  TYPES = ( sentinel, )
+  TYPES = ( Sentinels(), )
   def handle(self,scheduler,task,sentinel):
     if sentinel is DONE:
       return True
