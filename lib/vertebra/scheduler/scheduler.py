@@ -1,7 +1,8 @@
 from select import select
 from vertebra.util import StablePrioQueue,Full
 from weakref import ref,WeakKeyDictionary,WeakValueDictionary
-from logging import warn,error
+from logging import warn,error,debug
+from vertebra.scheduler.sentinel import BaseSentinelHandler
 from vertebra.scheduler.handler import Handler,NoopHandler
 from vertebra.scheduler.task import TaskHandler,Task
 from vertebra.scheduler.trigger import TriggerHandler,Trigger
@@ -17,6 +18,9 @@ class BaseScheduler(object):
     tah = TaskHandler()
     trh = TriggerHandler()
     self.handlers = [nh,bsh,tah,trh]
+
+  def __repr__(self):
+    return '<%s 0x%x>' % (self.__class__.__name__,id(self))
 
   def handle(self,task,ret):
     if type(ret) is list: # Lists are SPECIAL
@@ -57,6 +61,7 @@ class BaseScheduler(object):
       return False
 
   def process_triggers(self):
+    debug("%r: processing triggers",self)
     woken = False
     for trigger in self.triggers.keys():
       if trigger.ready(self):
@@ -65,6 +70,7 @@ class BaseScheduler(object):
     return woken
 
   def wake_sleeping(self,trigger):
+    debug("%r: waking trigger %r",self,trigger)
     try:
       T = self.triggers[trigger]
       while 1:
@@ -73,17 +79,20 @@ class BaseScheduler(object):
         except IndexError:
           del self.triggers[trigger]
           break
+        debug("%r: waking task %r",self,task)
         self.schedule(task,trigger)
         del T[0]
     except Full:
       pass # Queue Got Full, Try The Rest Next Time
 
   def loop(self):
+    debug("%r: starting",self)
     try:
       while 1:
         while self.process_triggers():
           while self.run_active():
             pass
+        debug("%r: going idle",self)
         self.idle()
     except StopIteration:
       # Time to stop
