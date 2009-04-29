@@ -1,6 +1,11 @@
-from vertebra.util import sym
+from vertebra.util import atom,atomfactory
 
-# TODO: Make these classes
-agent_default_security = sym.secure_default
-herault_security = sym.secure_herault
-always_allow = sym.secure_not_really
+class _security_type(atom):
+  pass
+
+security_type = _security_type.factory()
+
+# TODO: Make these full blown classes
+agent_default_security = security_type.secure_default
+herault_security = security_type.secure_herault
+always_allow = security_type.secure_not_really

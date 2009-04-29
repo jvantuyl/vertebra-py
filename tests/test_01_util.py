@@ -1,6 +1,7 @@
 from vertebra.util import *
-from vertebra.util import sym,symfactory as factory,symbol
+from vertebra.util import symbol
 from re import compile
+from pickle import dumps as pickle,loads as unpickle,HIGHEST_PROTOCOL
 
 class test_00_hex_functions:
   def test_00_hexify(self):
@@ -25,27 +26,27 @@ SYMBOL_REPR = compile('\(symbol .*\)')
 class test_01_symbol:
   def test_00_create(self):
     'util.symbol: basic creation'
-    sy_a = symbol('abc')
-    assert isinstance(sy_a,symbol)
+    sy_a = symbol.abc
+    assert symbol(sy_a)
     assert sy_a.symname() == 'abc'
   
   def test_01_repr(self):
     'util.symbol: text representation'
-    assert SYMBOL_REPR.match( repr( sym.a ) )
+    assert SYMBOL_REPR.match( repr( symbol.a ) )
 
   def test_02_factory(self):
     'util.symbol: factory creation'
-    fact_repr = '%r creates symbols' % sym # for code coverage
-    sy_a = symbol('a')
-    sf_a = sym.a
+    fact_repr = '%r creates symbols' % symbol # for code coverage
+    sy_a = _symbol('a')
+    sf_a = symbol.a
     assert sy_a is sf_a
 
   def test_03_identity(self):
     'util.symbol: symbol identity'
-    sy_a0 = sym.a
-    sy_b0 = sym.b
-    sy_a1 = sym.a
-    sy_b1 = sym.b
+    sy_a0 = symbol.a
+    sy_b0 = symbol.b
+    sy_a1 = symbol.a
+    sy_b1 = symbol.b
     assert sy_a0 is sy_a1
     assert sy_b0 is sy_b1
     assert sy_a0 is not sy_b0
@@ -55,9 +56,8 @@ class test_01_symbol:
   
   def test_04_pickle(self):
     'util.symbol: pickling'
-    from pickle import dumps as pickle,loads as unpickle,HIGHEST_PROTOCOL as X
-    cucumber = sym.cucumber
-    gerkin = pickle(cucumber,X) #NOTE: MUST be protocol 2+
+    cucumber = symbol.cucumber
+    gerkin = pickle(cucumber,HIGHEST_PROTOCOL) #NOTE: MUST be protocol 2+
     veggie = unpickle(gerkin)
     assert veggie is cucumber
   

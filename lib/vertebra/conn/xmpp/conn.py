@@ -23,7 +23,7 @@ from vertebra.conn.backoff import exponential_backoff
 from vertebra.conn.local import localConnection
 from vertebra.conn.xmpp.client import vxClient
 from vertebra.conn.xmpp.marshall import registry as codec
-from vertebra.util import symbol
+from vertebra.util import atom
 
 VERTEBRA_NS = ('vertebra','http://xmlschema.engineyard.com/agent/0.5')
 IDLE_INTERVAL=0.25
@@ -49,7 +49,7 @@ class xmppConnection(threadedConnection):
   def get_features(self):
     return []
 
-  class identity(symbol):
+  class identity(atom):
     def __str__(self):
       return self._symname
 

@@ -5,12 +5,12 @@ Utility Functions for Vertebra
 
 from hex import hexify, unhexify
 from patterns import memoize,singleton
-from structures import StablePrioQueue
-from symbols import sym,symbol,factory as symfactory
+from structures import StablePrioQueue,Full,Empty
+from symbols import atom,atomfactory,symbol,_symbol
 
 __all__ = [
   'hexify','unhexify',
-  'symbol','sym','symfactory',
+  'atom','atomfactory','symbol',
   'memoize','singleton',
-  'StablePrioQueue',
+  'StablePrioQueue','Full','Empty',
 ]

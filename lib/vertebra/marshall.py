@@ -8,12 +8,12 @@ and invoking those marshallers.
 """
 
 from logging import warn
-from vertebra.util import sym
+from vertebra.util import symbol
 
 __all__ = ['NOT_MINE','MarshallError','Marshaller','Registry','takes_types','takes_keys']
 
 # Sentinel Values
-NOT_MINE = sym.NOT_MINE
+NOT_MINE = symbol.NOT_MINE
 
 def takes_types(types): # Called At Class Definition Time
   """Decorator for limiting a marshaller to a certain set of types"""

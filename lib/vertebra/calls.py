@@ -1,4 +1,4 @@
-from vertebra.util import sym
+from vertebra.util import symbol
 from logging import info
 
 class incall(object):
@@ -34,10 +34,10 @@ def register_initcall(op,args,scope):
   info("initcall registered %r",op)
 
 # These should probably become classes
-once = sym.once
-once_then_exit = sym.once_then_exit
-restart = sym.restart
-restart_throttled = sym.restart_throttled
+once = symbol.once
+once_then_exit = symbol.once_then_exit
+restart = symbol.restart
+restart_throttled = symbol.restart_throttled
 
 # Mocks for Testing
 class mock_incall(object):

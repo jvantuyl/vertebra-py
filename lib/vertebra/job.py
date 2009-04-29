@@ -1,7 +1,7 @@
 from types import GeneratorType,DictType
 from threading import Thread
 from Queue import Queue,Empty
-from vertebra.util import sym
+from vertebra.util import symbol
 from random import randint
 from vertebra.token import token
 
@@ -67,31 +67,31 @@ class evented_runner(object): #TODO: Remove Threading, Adapt to Calls
         n = None
       if n is None:
         print "no commands, executing one run"
-      elif n is sym.start:
+      elif n is symbol.start:
         print "starting job function"
-        self.out(sym.started)
+        self.out(symbol.started)
         st = self.func(self,**self.kwargs)
         if type(st) is GeneratorType:
           print "got generator"
           self.running = st
         elif type(st) is DictType:
           print "single return"
-          self.out( (sym.data, st,), sym.final )
+          self.out( (symbol.data, st,), symbol.final )
           break
         elif st is None:
           print "null return"
-          self.out( sym.final )
+          self.out( symbol.final )
           break
         else:
           print "bad data"
-          self.out( (sym.error, BadData(),) )
-      elif n is sym.abort:
+          self.out( (symbol.error, BadData(),) )
+      elif n is symbol.abort:
         print "abort job"
         if self.running:
           try:
             self.running.throw( Aborted() )
           except Exception,e:
-            self.out( (sym.error,e) )
+            self.out( (symbol.error,e) )
         self.running = None
         break
       else:
@@ -106,7 +106,7 @@ class evented_runner(object): #TODO: Remove Threading, Adapt to Calls
             delay = r
           elif type(r) is DictType:
             print "return value"
-            self.out( (sym.data, r) )
+            self.out( (symbol.data, r) )
           elif r is None:
             print "skip iteration"
           else:
@@ -114,10 +114,10 @@ class evented_runner(object): #TODO: Remove Threading, Adapt to Calls
             self.running.throw( BadData() )
         except StopIteration:
           print "execution finished"
-          self.out( sym.final )
+          self.out( symbol.final )
           break
         except Exception, e:
           print "error"
-          self.out( (sym.error, e) )
+          self.out( (symbol.error, e) )
           break
     self.done = True
